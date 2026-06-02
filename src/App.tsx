@@ -1,4 +1,7 @@
+import { useState } from "react";
 import ExpandingCards from "./components/ExpandingCards";
+import AuthModal from "./components/AuthModal";
+import ContactModal from "./components/ContactModal";
 import { useSiteEffects } from "./lib/effects";
 
 /** Tester.io logo mark. Defines the shared `#g` gradient once (when withDefs). */
@@ -20,6 +23,9 @@ function Logo({ size = 30, withDefs = false }: { size?: number; withDefs?: boole
 
 export default function App() {
   useSiteEffects();
+
+  const [authMode, setAuthMode] = useState<"login" | "signup" | null>(null);
+  const [contactOpen, setContactOpen] = useState(false);
 
   return (
     <>
@@ -59,9 +65,12 @@ export default function App() {
               <a href="#token" className="hover:text-gold-200 transition-colors duration-300">Token</a>
               <a href="#how" className="hover:text-gold-200 transition-colors duration-300">How it works</a>
               <a href="#roadmap" className="hover:text-gold-200 transition-colors duration-300">Roadmap</a>
-              <a href="#" className="hover:text-gold-200 transition-colors duration-300">Blog</a>
+              <button type="button" onClick={() => setContactOpen(true)} className="hover:text-gold-200 transition-colors duration-300">Contact</button>
             </div>
-            <a href="#" data-magnetic className="inline-flex items-center text-[13px] 2xl:text-[16px] font-bold btn-gold rounded-full px-5 py-2 2xl:px-7 2xl:py-2.5">Log in</a>
+            <div className="flex items-center gap-2.5">
+              <button type="button" onClick={() => setContactOpen(true)} className="hidden sm:inline-flex items-center text-[13px] 2xl:text-[16px] font-bold btn-ghost rounded-full px-5 py-2 2xl:px-7 2xl:py-2.5">Contact</button>
+              <button type="button" onClick={() => setAuthMode("login")} data-magnetic className="inline-flex items-center text-[13px] 2xl:text-[16px] font-bold btn-gold rounded-full px-5 py-2 2xl:px-7 2xl:py-2.5">Log in</button>
+            </div>
           </nav>
         </div>
       </header>
@@ -91,7 +100,7 @@ export default function App() {
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" className="2xl:w-5 2xl:h-5"><path d="M4 6h16v12H4z" stroke="#8A8A8F" strokeWidth="1.6" /><path d="m4 7 8 6 8-6" stroke="#8A8A8F" strokeWidth="1.6" /></svg>
                 <input type="email" placeholder="Business email" className="bg-transparent w-full text-[14px] 2xl:text-[16px] text-white placeholder:text-mute outline-none" />
               </div>
-              <button type="submit" data-magnetic className="inline-flex items-center justify-center gap-2 text-[13px] 2xl:text-[15px] font-bold btn-gold rounded-full px-6 py-3 2xl:px-8 2xl:py-4 whitespace-nowrap">Get Early Access</button>
+              <button type="submit" onClick={() => setAuthMode("signup")} data-magnetic className="inline-flex items-center justify-center gap-2 text-[13px] 2xl:text-[15px] font-bold btn-gold rounded-full px-6 py-3 2xl:px-8 2xl:py-4 whitespace-nowrap">Get Early Access</button>
             </form>
             <p className="rise mt-4 text-[13px] 2xl:text-[15px] font-medium text-mute" style={{ animationDelay: ".34s" }}>Start monitoring for free or message us!</p>
 
@@ -382,6 +391,29 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* ===== FLOATING CONTACT BUTTON ===== */}
+      <button
+        type="button"
+        onClick={() => setContactOpen(true)}
+        data-magnetic
+        aria-label="Contact us"
+        className="fab btn-gold inline-flex items-center gap-2 rounded-full pl-4 pr-5 py-3.5 text-[13.5px] font-bold shadow-lg"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A1308" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4L3 21l1.1-4.2A8.4 8.4 0 1 1 21 11.5z" />
+        </svg>
+        <span className="hidden sm:inline">Contact</span>
+      </button>
+
+      {/* ===== MODALS ===== */}
+      <AuthModal
+        open={authMode !== null}
+        mode={authMode ?? "login"}
+        onClose={() => setAuthMode(null)}
+        onSwitch={(m) => setAuthMode(m)}
+      />
+      <ContactModal open={contactOpen} onClose={() => setContactOpen(false)} />
     </>
   );
 }

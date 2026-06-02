@@ -124,6 +124,48 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 .intro .rise { animation-play-state:paused; }
 html.intro, html.intro body { overflow:hidden; }
 
+/* ===== modal / auth / contact ===== */
+@keyframes modalIn { from{opacity:0;} to{opacity:1;} }
+@keyframes panelIn { from{opacity:0; transform:translateY(18px) scale(.98);} to{opacity:1; transform:none;} }
+.modal-backdrop { position:fixed; inset:0; z-index:90; display:grid; place-items:center; padding:18px; overflow-y:auto;
+  background:rgba(4,4,4,.72); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); animation:modalIn .3s ease forwards; }
+.modal-panel { position:relative; width:100%; margin:auto; animation:panelIn .55s var(--ease-spring) forwards;
+  background:linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,0) 32%), linear-gradient(180deg,#141414,#0A0A0A);
+  border:1px solid rgba(255,255,255,.08); border-radius:24px;
+  box-shadow:0 40px 120px -30px rgba(0,0,0,.85), 0 30px 90px -55px rgba(230,185,121,.45); }
+.modal-x { color:#8A8A8F; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.03);
+  transition:color .3s var(--ease-spring), border-color .3s var(--ease-spring), background .3s var(--ease-spring), transform .3s var(--ease-spring); }
+.modal-x:hover { color:#FBF3DE; border-color:rgba(230,185,121,.5); background:rgba(230,185,121,.07); }
+.modal-x:active { transform:scale(.93); }
+
+/* form fields */
+.field { display:flex; align-items:center; gap:10px; border-radius:14px; padding:0 14px; height:52px;
+  border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.03);
+  transition:border-color .3s var(--ease-spring), background .3s var(--ease-spring), box-shadow .3s var(--ease-spring); }
+.field:focus-within { border-color:rgba(230,185,121,.55); background:rgba(230,185,121,.05); box-shadow:0 0 0 4px rgba(230,185,121,.08); }
+.field input, .field textarea { background:transparent; width:100%; color:#fff; font-size:14px; outline:none; font-family:inherit; }
+.field input::placeholder, .field textarea::placeholder { color:#8A8A8F; }
+.field--area { height:auto; align-items:flex-start; padding:14px; }
+.field--area textarea { resize:none; min-height:118px; line-height:1.6; }
+
+/* social / oauth buttons */
+.btn-social { display:flex; align-items:center; justify-content:center; gap:10px; height:48px; border-radius:14px;
+  border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.025); color:#EDEDED; font-weight:600; font-size:13.5px;
+  transition:transform .3s var(--ease-spring), border-color .3s var(--ease-spring), background .3s var(--ease-spring), color .3s var(--ease-spring); }
+.btn-social:hover { transform:translateY(-2px); border-color:rgba(230,185,121,.5); background:rgba(230,185,121,.06); color:#FBF3DE; }
+.btn-social:active { transform:translateY(0) scale(.99); }
+
+/* custom checkbox */
+.ck { appearance:none; -webkit-appearance:none; width:18px; height:18px; border-radius:6px; flex:0 0 auto; cursor:pointer;
+  border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.03); display:grid; place-items:center;
+  transition:background .2s ease, border-color .2s ease; }
+.ck:checked { background:linear-gradient(140deg,#F2DDA8,#C6A559); border-color:#E6B979; }
+.ck:checked::after { content:""; width:5px; height:9px; border:solid #1A1308; border-width:0 2px 2px 0; transform:rotate(45deg) translateY(-1px); }
+
+/* floating contact button */
+.fab { position:fixed; right:22px; bottom:22px; z-index:40; }
+@media (max-width:640px){ .fab { right:16px; bottom:16px; } }
+
 /* motion */
 @keyframes rise { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:none;} }
 .rise { opacity:0; animation:rise .9s var(--ease-spring) forwards; }
@@ -136,6 +178,7 @@ html.intro, html.intro body { overflow:hidden; }
 @media (prefers-reduced-motion: reduce) {
   .reveal,.rise{opacity:1!important;transform:none!important;animation:none!important;}
   .floaty,.floaty-slow,.marquee-track,.logo-marq,.loader-bar>i{animation:none!important;}
+  .modal-backdrop,.modal-panel{animation:none!important;}
   #hero-canvas{display:none!important;} #loader{display:none!important;}
   html{scroll-behavior:auto;}
 }
