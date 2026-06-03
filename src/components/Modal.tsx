@@ -48,29 +48,17 @@ export default function Modal({
   );
 }
 
-/** Tester.io mark with a self-contained gradient (safe to render outside App's #g defs). */
+/** Tester.io brand logo mark — the real asset (brand_assets/Tester Logo.png). */
 export function ModalLogo({ size = 30 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 48 48" fill="none" aria-hidden="true">
-      <defs>
-        <linearGradient id="gm" x1="6" y1="6" x2="42" y2="44" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#F2DDA8" />
-          <stop offset=".45" stopColor="#E6B979" />
-          <stop offset="1" stopColor="#A9863F" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M10 4h24a8 8 0 0 1 8 8v18a8 8 0 0 1-8 8H22l-9 7v-7h-3a8 8 0 0 1-8-8V12a8 8 0 0 1 8-8Z"
-        fill="url(#gm)"
-      />
-      <path
-        d="M16 24.5 21.5 30 33 17"
-        stroke="#1A1308"
-        strokeWidth="4.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <img
+      src="/tester-logo.png"
+      alt=""
+      aria-hidden="true"
+      draggable={false}
+      className="block select-none"
+      style={{ width: size, height: size }}
+    />
   );
 }
 

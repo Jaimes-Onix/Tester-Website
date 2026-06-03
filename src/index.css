@@ -4,7 +4,8 @@
 
 :root { --ease-spring: cubic-bezier(.16,1,.3,1); }
 html { background:#070707; }
-body { -webkit-font-smoothing:antialiased; }
+/* Brand type: Montserrat — body text is Medium (500) per Brand Guidelines. */
+body { -webkit-font-smoothing:antialiased; font-weight:500; }
 ::selection { background: rgba(230,185,121,.28); color:#FBF3DE; }
 a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible { outline:2px solid #E6B979; outline-offset:3px; border-radius:10px; }
 
@@ -22,9 +23,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 [data-magnetic] { transition:box-shadow .35s var(--ease-spring), filter .35s var(--ease-spring) !important; }
 [data-magnetic]:hover { transform:none; }
 
-.btn-ghost { border:1px solid rgba(255,255,255,.16); color:#EDEDED; background:rgba(255,255,255,.02);
+/* Secondary button — gold outline + gold text ("Learn More" in Brand Guidelines). */
+.btn-ghost { border:1px solid rgba(230,185,121,.55); color:#F2DDA8; background:rgba(230,185,121,.04);
   transition:transform .35s var(--ease-spring), border-color .35s var(--ease-spring), background .35s var(--ease-spring), color .35s var(--ease-spring); }
-.btn-ghost:hover { transform:translateY(-2px); border-color:rgba(230,185,121,.6); color:#FBF3DE; background:rgba(230,185,121,.06); }
+.btn-ghost:hover { transform:translateY(-2px); border-color:#E6B979; color:#FBF3DE; background:rgba(230,185,121,.10); }
 
 .pill { border:1px solid rgba(230,185,121,.22); background:rgba(230,185,121,.06); }
 .chip { border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); }

@@ -4,20 +4,17 @@ import AuthModal from "./components/AuthModal";
 import ContactModal from "./components/ContactModal";
 import { useSiteEffects } from "./lib/effects";
 
-/** Tester.io logo mark. Defines the shared `#g` gradient once (when withDefs). */
-function Logo({ size = 30, withDefs = false }: { size?: number; withDefs?: boolean }) {
+/** Tester.io brand logo mark — the real asset (brand_assets/Tester Logo.png).
+ *  Pass `className` for responsive sizing, or `size` for a fixed px square. */
+function Logo({ size = 30, className }: { size?: number; className?: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
-      {withDefs && (
-        <defs>
-          <linearGradient id="g" x1="6" y1="6" x2="42" y2="44" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#F2DDA8" /><stop offset=".45" stopColor="#E6B979" /><stop offset="1" stopColor="#A9863F" />
-          </linearGradient>
-        </defs>
-      )}
-      <path d="M10 4h24a8 8 0 0 1 8 8v18a8 8 0 0 1-8 8H22l-9 7v-7h-3a8 8 0 0 1-8-8V12a8 8 0 0 1 8-8Z" fill="url(#g)" />
-      <path d="M16 24.5 21.5 30 33 17" stroke="#1A1308" strokeWidth="4.2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
+    <img
+      src="/tester-logo.png"
+      alt=""
+      draggable={false}
+      className={className ?? "block select-none"}
+      style={className ? undefined : { width: size, height: size }}
+    />
   );
 }
 
@@ -34,10 +31,7 @@ export default function App() {
         <canvas id="intro-canvas" />
         <div className="intro-vignette" />
         <div className="intro-content">
-          <svg className="intro-logo" width="88" height="88" viewBox="0 0 48 48" fill="none">
-            <path d="M10 4h24a8 8 0 0 1 8 8v18a8 8 0 0 1-8 8H22l-9 7v-7h-3a8 8 0 0 1-8-8V12a8 8 0 0 1 8-8Z" fill="#E6B979" />
-            <path d="M16 24.5 21.5 30 33 17" stroke="#1A1308" strokeWidth="4.2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <img className="intro-logo" src="/tester-logo.png" width={88} height={88} alt="" draggable={false} />
           <div className="intro-title text-[42px] sm:text-[58px] font-extrabold tracking-tightest leading-none">Tester<span className="text-gold-grad">.io</span></div>
           <div className="intro-sub text-[11px] uppercase tracking-[.36em] text-mute">The future of leverage</div>
           <div className="intro-bar"><i /></div>
@@ -55,7 +49,7 @@ export default function App() {
           <nav className="mx-auto max-w-7xl 2xl:max-w-[92rem] px-5 lg:px-8 2xl:px-12 h-[64px] 2xl:h-[84px] flex items-center justify-between">
             <a href="#top" className="flex items-center gap-2.5 2xl:gap-3 group" aria-label="Tester.io home">
               <span className="w-7 h-7 2xl:w-10 2xl:h-10 transition-transform duration-500 group-hover:scale-105" style={{ transitionTimingFunction: "var(--ease-spring)" }}>
-                <Logo size={40} withDefs />
+                <Logo className="w-full h-full block select-none" />
               </span>
               <span className="text-[17px] 2xl:text-[22px] font-extrabold tracking-tight">Tester<span className="text-gold-grad">.io</span></span>
             </a>
@@ -109,7 +103,7 @@ export default function App() {
               <canvas id="hero-canvas" />
               <div className="hero-orb-fallback absolute inset-0 grid place-items-center">
                 <div className="emblem w-44 h-44 sm:w-56 sm:h-56 floaty">
-                  <svg width="64" height="64" viewBox="0 0 48 48" fill="none"><path d="M10 4h24a8 8 0 0 1 8 8v18a8 8 0 0 1-8 8H22l-9 7v-7h-3a8 8 0 0 1-8-8V12a8 8 0 0 1 8-8Z" fill="url(#g)" /><path d="M16 24.5 21.5 30 33 17" stroke="#1A1308" strokeWidth="4.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  <Logo size={72} />
                 </div>
               </div>
             </div>

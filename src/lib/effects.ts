@@ -182,7 +182,8 @@ function startIntroShader(): (() => void) | null {
   window.addEventListener("resize", resize);
   canvas.classList.add("on");
   let raf = 0;
-  const loop = () => { raf = requestAnimationFrame(loop); uniforms.time.value += 0.05; renderer.render(scene, camera); };
+  // ~0.025/frame so the light sweep completes a single pulse across the 5s intro (was 0.05 → two pulses).
+  const loop = () => { raf = requestAnimationFrame(loop); uniforms.time.value += 0.025; renderer.render(scene, camera); };
   loop();
   return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); geo.dispose(); material.dispose(); renderer.dispose(); };
 }
