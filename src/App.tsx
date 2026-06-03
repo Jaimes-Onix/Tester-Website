@@ -18,6 +18,72 @@ function Logo({ size = 30, className }: { size?: number; className?: string }) {
   );
 }
 
+/** Distinctive company logo-lockups for the "trusted by" rail.
+ *  Each mark is a custom geometric glyph (not a generic dingbat) in the gold line style. */
+const TRUST_LOGOS: { name: string; mark: JSX.Element }[] = [
+  {
+    name: "Northpeak",
+    mark: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round">
+        <path d="M3 19 8.5 8l3.5 6 2-3.5L21 19z" />
+      </svg>
+    ),
+  },
+  {
+    name: "Helix",
+    mark: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+        <ellipse cx="12" cy="12" rx="9" ry="4" />
+        <ellipse cx="12" cy="12" rx="4" ry="9" />
+      </svg>
+    ),
+  },
+  {
+    name: "Vault",
+    mark: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round">
+        <path d="M12 3 4 6v5c0 4.4 3.2 7.5 8 9 4.8-1.5 8-4.6 8-9V6z" />
+        <circle cx="12" cy="11" r="2.2" />
+      </svg>
+    ),
+  },
+  {
+    name: "Quantum",
+    mark: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round">
+        <circle cx="5" cy="6" r="1.8" /><circle cx="19" cy="6" r="1.8" /><circle cx="12" cy="18" r="1.8" />
+        <path d="M6.5 7 11 16.5M17.5 7 13 16.5M6.5 6h11" />
+      </svg>
+    ),
+  },
+  {
+    name: "Beacon",
+    mark: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+        <circle cx="12" cy="12" r="2.4" />
+        <path d="M7.5 7.5a6 6 0 0 0 0 9M16.5 7.5a6 6 0 0 1 0 9M4.7 4.7a10 10 0 0 0 0 14.6M19.3 4.7a10 10 0 0 1 0 14.6" />
+      </svg>
+    ),
+  },
+  {
+    name: "Cobalt",
+    mark: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round">
+        <path d="M12 3 20 7.5v9L12 21 4 16.5v-9z" />
+        <path d="m4 7.5 8 4.5 8-4.5M12 12v9" />
+      </svg>
+    ),
+  },
+];
+
+/** Roadmap milestones — drives the connector progress + per-node status. */
+const ROADMAP: { year: string; status: string; done: boolean; desc: string; icon: JSX.Element }[] = [
+  { year: "2014", status: "Shipped", done: true, desc: "Definitions of key terms in cryptocurrency.", icon: <path d="M6 21V4h11l-2.5 4L17 12H6" /> },
+  { year: "2017", status: "Shipped", done: true, desc: "Automated tools for executing strategies.", icon: <><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" /></> },
+  { year: "2022", status: "In progress", done: false, desc: "APIs for developers to build custom tools.", icon: <path d="M9 8l-4 4 4 4M15 8l4 4-4 4" /> },
+  { year: "2025", status: "Planned", done: false, desc: "A space for users to discuss trends.", icon: <path d="M4 5h16v10H9l-5 4z" /> },
+];
+
 export default function App() {
   useSiteEffects();
 
@@ -111,12 +177,20 @@ export default function App() {
         </section>
 
         {/* ===== TRUSTED BY ===== */}
-        <section className="relative py-10">
-          <p className="text-center text-[13px] font-semibold text-mute mb-7">Trusted Over <span className="text-gold-200">2300+</span> Companies in the World</p>
-          <div className="mx-auto max-w-5xl px-5 marquee-mask overflow-hidden">
-            <div className="logo-marq flex items-center gap-14 w-max text-[18px] font-bold text-mute/70">
-              <span className="flex items-center gap-14"><span>◈ SOFTWARE</span><span>✦ Hexatech</span><span>❖ Metrics</span><span>△ TripleTech</span><span>◇ Northwind</span></span>
-              <span className="flex items-center gap-14" aria-hidden="true"><span>◈ SOFTWARE</span><span>✦ Hexatech</span><span>❖ Metrics</span><span>△ TripleTech</span><span>◇ Northwind</span></span>
+        <section className="relative py-12 lg:py-14">
+          <p className="text-center text-[11px] uppercase tracking-[.28em] font-semibold text-mute mb-9">
+            Trusted by <span className="text-gold-200">2,300+</span> companies worldwide
+          </p>
+          <div className="trust-rail mx-auto max-w-6xl py-7">
+            <div className="marquee-mask overflow-hidden">
+              <div className="logo-marq flex items-center gap-16 w-max">
+                {[...TRUST_LOGOS, ...TRUST_LOGOS].map((l, i) => (
+                  <span key={i} className="trust-logo" aria-hidden={i >= TRUST_LOGOS.length}>
+                    {l.mark}
+                    <span className="trust-name">{l.name}</span>
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </section>
@@ -174,9 +248,37 @@ export default function App() {
         <section id="token" className="relative py-20 lg:py-24">
           <div className="mx-auto max-w-6xl px-5 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
             <div className="reveal">
-              <span className="inline-flex items-center gap-2 rounded-full pill px-3.5 py-1.5 text-[12px] font-semibold text-gold-200">Accessible For Everyone</span>
+              <span className="inline-flex items-center gap-2 rounded-full pill px-3.5 py-1.5 text-[12px] font-semibold text-gold-200"><span className="h-1.5 w-1.5 rounded-full bg-gold-300 animate-pulse" /> Token Sale · Live</span>
               <h2 className="mt-5 text-[32px] sm:text-[44px] font-extrabold tracking-tightest leading-[1.06]">Trading <span className="text-gold-grad">platform</span><br />of the future!</h2>
               <p className="mt-5 max-w-md text-[15px] leading-[1.7] font-medium text-mute">Tester.io brings our love for cryptocurrency into Web3. Like a frog's leap, the chart can jump at any moment. Boom!</p>
+
+              {/* supporting stats — balance the column against the tall sale card */}
+              <dl className="mt-9 grid grid-cols-2 gap-x-8 gap-y-7 max-w-md">
+                <div>
+                  <dt className="text-[28px] sm:text-[32px] font-extrabold tracking-tight text-gold-grad leading-none" data-count="370000" data-suffix="+">370,000+</dt>
+                  <dd className="mt-2 text-[13px] leading-[1.5] text-mute">Holders already onboarded across chains.</dd>
+                </div>
+                <div>
+                  <dt className="text-[28px] sm:text-[32px] font-extrabold tracking-tight text-gold-grad leading-none">0.00014 <span className="text-[18px] sm:text-[20px] align-top">BTC</span></dt>
+                  <dd className="mt-2 text-[13px] leading-[1.5] text-mute">Current TST token price — early in.</dd>
+                </div>
+              </dl>
+
+              {/* assurance bullets */}
+              <ul className="mt-8 space-y-3.5 max-w-md">
+                {[
+                  "Audited & verified smart contract",
+                  "Available on BTC, ETH, SOL & more",
+                  "Transparent on-chain vesting schedule",
+                ].map((t) => (
+                  <li key={t} className="flex items-center gap-3 text-[14px] font-medium text-white/90">
+                    <span className="grid place-items-center h-6 w-6 shrink-0 rounded-full" style={{ background: "linear-gradient(140deg,#F2DDA8,#C6A559)", boxShadow: "0 0 16px -4px rgba(230,185,121,.5)" }}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1A1308" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 5 5 9-11" /></svg>
+                    </span>
+                    {t}
+                  </li>
+                ))}
+              </ul>
             </div>
 
             <div className="reveal card rounded-3xl p-7">
@@ -265,12 +367,23 @@ export default function App() {
               <h2 className="mt-5 text-[32px] sm:text-[42px] font-extrabold tracking-tightest leading-[1.08]">Our <span className="text-gold-grad">strategy</span> &amp; Planning</h2>
             </div>
 
-            <div className="relative mt-16 grid grid-cols-2 lg:grid-cols-4 gap-10">
-              <div aria-hidden="true" className="hidden lg:block absolute top-7 left-[12%] right-[12%] h-px bg-gradient-to-r from-transparent via-gold-500/40 to-transparent" />
-              <div className="reveal text-center"><div className="mx-auto rm-node done w-14 h-14 mb-5"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1A1308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 21V4h11l-2.5 4L17 12H6" /></svg></div><div className="text-[20px] font-extrabold text-gold-grad">2014</div><p className="mt-2 text-[13px] text-mute max-w-[180px] mx-auto">Definitions of key terms in cryptocurrency.</p></div>
-              <div className="reveal text-center"><div className="mx-auto rm-node done w-14 h-14 mb-5"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1A1308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" /></svg></div><div className="text-[20px] font-extrabold text-gold-grad">2017</div><p className="mt-2 text-[13px] text-mute max-w-[180px] mx-auto">Automated tools for executing strategies.</p></div>
-              <div className="reveal text-center"><div className="mx-auto rm-node w-14 h-14 mb-5"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E6B979" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 8l-4 4 4 4M15 8l4 4-4 4" /></svg></div><div className="text-[20px] font-extrabold text-gold-grad">2022</div><p className="mt-2 text-[13px] text-mute max-w-[180px] mx-auto">APIs for developers to build custom tools.</p></div>
-              <div className="reveal text-center"><div className="mx-auto rm-node w-14 h-14 mb-5"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E6B979" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16v10H9l-5 4z" /></svg></div><div className="text-[20px] font-extrabold text-gold-grad">2025</div><p className="mt-2 text-[13px] text-mute max-w-[180px] mx-auto">A space for users to discuss trends.</p></div>
+            <div className="relative mt-16 grid grid-cols-2 lg:grid-cols-4 gap-y-12 gap-x-10">
+              {/* base rail + completed-progress overlay (through the "In progress" node) */}
+              <div aria-hidden="true" className="hidden lg:block absolute top-7 left-[12.5%] right-[12.5%] h-px bg-white/10" />
+              <div aria-hidden="true" className="hidden lg:block absolute top-7 left-[12.5%] w-[50%] h-px" style={{ background: "linear-gradient(90deg,rgba(230,185,121,.85),rgba(230,185,121,.85) 70%,transparent)", boxShadow: "0 0 12px rgba(230,185,121,.55)" }} />
+              {ROADMAP.map((m, i) => (
+                <div key={m.year} className="reveal text-center">
+                  <div className={`relative mx-auto rm-node w-14 h-14 mb-5${m.done ? " done" : ""}`}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={m.done ? "#1A1308" : "#E6B979"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{m.icon}</svg>
+                  </div>
+                  <div className="text-[11px] uppercase tracking-[.22em] font-semibold text-mute/80 mb-1.5">Phase {String(i + 1).padStart(2, "0")}</div>
+                  <div className="text-[22px] font-extrabold text-gold-grad leading-none">{m.year}</div>
+                  <p className="mt-2.5 text-[13px] leading-[1.5] text-mute max-w-[180px] mx-auto">{m.desc}</p>
+                  <span className={`mt-3 inline-flex items-center gap-1.5 text-[11px] font-semibold ${m.done ? "text-gold-200" : "text-mute/70"}`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${m.done ? "bg-gold-300" : "bg-white/30"}`} />{m.status}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </section>

@@ -88,6 +88,19 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
   .exp-vtitle { transform:none; left:22px; top:20px; bottom:auto; }
 }
 
+/* trusted-by logo lockups */
+.trust-rail { position:relative; }
+.trust-rail::before, .trust-rail::after { content:""; position:absolute; inset-inline:0; height:1px; pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(230,185,121,.22),transparent); }
+.trust-rail::before { top:0; } .trust-rail::after { bottom:0; }
+.trust-logo { display:flex; align-items:center; gap:11px; flex:0 0 auto; color:rgba(214,214,219,.42);
+  filter:grayscale(1); opacity:.7; transition:color .4s var(--ease-spring), opacity .4s var(--ease-spring), filter .4s var(--ease-spring); }
+.trust-logo svg { color:rgba(214,214,219,.5); transition:color .4s var(--ease-spring); }
+.trust-logo .trust-name { font-size:18px; font-weight:700; letter-spacing:-.01em; white-space:nowrap; }
+.logo-marq:hover .trust-logo { opacity:.4; }
+.logo-marq .trust-logo:hover { opacity:1; filter:grayscale(0); color:#FBF3DE; }
+.logo-marq .trust-logo:hover svg { color:#E6B979; }
+
 /* dot texture */
 .dots { background-image:radial-gradient(rgba(255,255,255,.07) 1px, transparent 1.4px); background-size:22px 22px;
   -webkit-mask-image:radial-gradient(ellipse 72% 58% at 50% 32%, #000, transparent 78%); mask-image:radial-gradient(ellipse 72% 58% at 50% 32%, #000, transparent 78%); }

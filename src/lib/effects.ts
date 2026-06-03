@@ -203,23 +203,51 @@ function startHero(): (() => void) | null {
   const camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 100);
   camera.position.z = 7;
 
+  // ---- faceted gem core: dark warm metal that catches gold light (flat facets stay crisp) ----
   const geo = new THREE.IcosahedronGeometry(2.0, 1);
-  const core = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0x0d0d0d, metalness: 0.95, roughness: 0.32, flatShading: true }));
+  const coreMat = new THREE.MeshStandardMaterial({
+    color: 0x7c5e28, metalness: 0.3, roughness: 0.38, flatShading: true,
+    emissive: 0x2a1e0c, emissiveIntensity: 0.5,
+  });
+  const core = new THREE.Mesh(geo, coreMat);
   scene.add(core);
-  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color: 0xe6b979, transparent: true, opacity: 0.55 }));
+
+  // crisp, luminous gold wireframe that defines every facet
+  const edgeGeo = new THREE.EdgesGeometry(geo);
+  const edges = new THREE.LineSegments(edgeGeo, new THREE.LineBasicMaterial({ color: 0xF7E6B8, transparent: true, opacity: 0.92 }));
   core.add(edges);
 
-  const key = new THREE.PointLight(0xf2dda8, 2.6, 60); key.position.set(5, 4, 6); scene.add(key);
-  const rim = new THREE.PointLight(0xc6a559, 1.8, 60); rim.position.set(-6, -2, 3); scene.add(rim);
-  scene.add(new THREE.AmbientLight(0x222222, 0.7));
+  // ---- fresnel rim glow: a smooth gold aura so the gem pops off the black ----
+  const glowGeo = new THREE.SphereGeometry(2.12, 48, 48);
+  const glowMat = new THREE.ShaderMaterial({
+    transparent: true, blending: THREE.AdditiveBlending, side: THREE.BackSide, depthWrite: false,
+    uniforms: { glowColor: { value: new THREE.Color(0xE6B979) }, power: { value: 4.6 }, scale: { value: 0.92 } },
+    vertexShader:
+      "varying float vi; uniform float power; uniform float scale;" +
+      "void main(){ vec3 n = normalize(normalMatrix * normal); vec3 v = normalize(normalMatrix * vec3(0.,0.,1.));" +
+      " vi = pow(clamp(scale - dot(n, v), 0.0, 1.0), power);" +
+      " gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+    fragmentShader:
+      "varying float vi; uniform vec3 glowColor;" +
+      "void main(){ gl_FragColor = vec4(glowColor * 0.55, 1.0) * vi; }",
+  });
+  const glow = new THREE.Mesh(glowGeo, glowMat);
+  scene.add(glow);
 
-  const P = 500, pos = new Float32Array(P * 3);
+  // ---- lighting: warm key + gold rim + soft front fill so facets read clearly ----
+  const key = new THREE.DirectionalLight(0xfff1d4, 3.6); key.position.set(5, 4, 6); scene.add(key);
+  const rim = new THREE.DirectionalLight(0xc6a559, 2.2); rim.position.set(-6, -3, 2); scene.add(rim);
+  const fill = new THREE.DirectionalLight(0xE6B979, 1.4); fill.position.set(0, 1, 7); scene.add(fill);
+  scene.add(new THREE.AmbientLight(0x3a3122, 1.0));
+
+  // ---- gold dust: denser, additive, twinkly halo across two depths ----
+  const P = 900, pos = new Float32Array(P * 3);
   for (let i = 0; i < P; i++) {
-    const u = Math.random(), v = Math.random(), th = 2 * Math.PI * u, ph = Math.acos(2 * v - 1), rr = 3.4 + Math.random() * 1.2;
+    const u = Math.random(), v = Math.random(), th = 2 * Math.PI * u, ph = Math.acos(2 * v - 1), rr = 2.9 + Math.random() * 2.5;
     pos[i * 3] = rr * Math.sin(ph) * Math.cos(th); pos[i * 3 + 1] = rr * Math.sin(ph) * Math.sin(th); pos[i * 3 + 2] = rr * Math.cos(ph);
   }
   const pgeo = new THREE.BufferGeometry(); pgeo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-  const halo = new THREE.Points(pgeo, new THREE.PointsMaterial({ color: 0xe6b979, size: 0.04, transparent: true, opacity: 0.7, depthWrite: false }));
+  const halo = new THREE.Points(pgeo, new THREE.PointsMaterial({ color: 0xF2DDA8, size: 0.055, transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.AdditiveBlending }));
   scene.add(halo);
 
   const m = { x: 0, y: 0, tx: 0, ty: 0 };
@@ -244,7 +272,8 @@ function startHero(): (() => void) | null {
     const t = clock.getElapsedTime();
     m.x += (m.tx - m.x) * 0.06; m.y += (m.ty - m.y) * 0.06;
     core.rotation.y = t * 0.25 + m.x * 0.9; core.rotation.x = t * 0.12 + m.y * 0.7;
-    halo.rotation.y = -t * 0.06 + scrollY * 0.0002;
+    halo.rotation.y = -t * 0.06 + scrollY * 0.0002; halo.rotation.x = t * 0.02;
+    glowMat.uniforms.scale.value = 0.9 + Math.sin(t * 1.1) * 0.04; // subtle living aura
     key.position.x = 5 + m.x * 4; key.position.y = 4 - m.y * 4;
     renderer.render(scene, camera);
   };
@@ -256,6 +285,7 @@ function startHero(): (() => void) | null {
     window.removeEventListener("scroll", onScroll);
     window.removeEventListener("resize", onResize);
     io.disconnect();
-    geo.dispose(); (core.material as THREE.Material).dispose(); pgeo.dispose(); renderer.dispose();
+    geo.dispose(); coreMat.dispose(); edgeGeo.dispose(); (edges.material as THREE.Material).dispose();
+    glowGeo.dispose(); glowMat.dispose(); pgeo.dispose(); (halo.material as THREE.Material).dispose(); renderer.dispose();
   };
 }
