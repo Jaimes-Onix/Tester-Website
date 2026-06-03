@@ -128,8 +128,8 @@ export default function App() {
               <button type="button" onClick={() => setContactOpen(true)} className="hover:text-gold-200 transition-colors duration-300">Contact</button>
             </div>
             <div className="flex items-center gap-2.5">
-              <button type="button" onClick={() => setContactOpen(true)} className="hidden sm:inline-flex items-center text-[13px] 2xl:text-[16px] font-bold btn-ghost rounded-full px-5 py-2 2xl:px-7 2xl:py-2.5">Contact</button>
-              <button type="button" onClick={() => setAuthMode("login")} data-magnetic className="inline-flex items-center text-[13px] 2xl:text-[16px] font-bold btn-gold rounded-full px-5 py-2 2xl:px-7 2xl:py-2.5">Log in</button>
+              <button type="button" onClick={() => setContactOpen(true)} className="hidden sm:inline-flex items-center text-[13px] 2xl:text-[16px] font-bold btn-ghost rounded-full px-5 py-2.5 2xl:px-7 2xl:py-3">Contact</button>
+              <button type="button" onClick={() => setAuthMode("login")} data-magnetic className="inline-flex items-center text-[13px] 2xl:text-[16px] font-bold btn-gold rounded-full px-5 py-2.5 2xl:px-7 2xl:py-3">Log in</button>
             </div>
           </nav>
         </div>
@@ -196,7 +196,7 @@ export default function App() {
         </section>
 
         {/* ===== FEATURES ===== */}
-        <section id="features" className="relative py-20 lg:py-24">
+        <section id="features" className="relative py-14 sm:py-20 lg:py-24">
           <div className="mx-auto max-w-6xl px-5 lg:px-8">
             <div className="reveal text-center max-w-2xl mx-auto">
               <span className="inline-flex items-center gap-2 rounded-full pill px-3.5 py-1.5 text-[12px] font-semibold text-gold-200">Accessible For Everyone</span>
@@ -245,7 +245,7 @@ export default function App() {
         </section>
 
         {/* ===== TOKEN SALE ===== */}
-        <section id="token" className="relative py-20 lg:py-24">
+        <section id="token" className="relative py-14 sm:py-20 lg:py-24">
           <div className="mx-auto max-w-6xl px-5 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
             <div className="reveal">
               <span className="inline-flex items-center gap-2 rounded-full pill px-3.5 py-1.5 text-[12px] font-semibold text-gold-200"><span className="h-1.5 w-1.5 rounded-full bg-gold-300 animate-pulse" /> Token Sale · Live</span>
@@ -302,7 +302,7 @@ export default function App() {
         </section>
 
         {/* ===== HOW IT WORKS / CORE ASSET ===== */}
-        <section id="how" className="relative py-20 lg:py-24 border-t border-white/[.06]">
+        <section id="how" className="relative py-14 sm:py-20 lg:py-24 border-t border-white/[.06]">
           <div className="mx-auto max-w-6xl px-5 lg:px-8">
             <div className="reveal text-center max-w-2xl mx-auto">
               <span className="inline-flex items-center gap-2 rounded-full pill px-3.5 py-1.5 text-[12px] font-semibold text-gold-200">How it Works!</span>
@@ -329,7 +329,7 @@ export default function App() {
         </section>
 
         {/* ===== GOODS & ASSETS ===== */}
-        <section className="relative py-20 lg:py-24">
+        <section className="relative py-14 sm:py-20 lg:py-24">
           <div className="mx-auto max-w-6xl px-5 lg:px-8">
             <div className="reveal text-center max-w-2xl mx-auto">
               <span className="inline-flex items-center gap-2 rounded-full pill px-3.5 py-1.5 text-[12px] font-semibold text-gold-200">Crypto Direction</span>
@@ -360,7 +360,7 @@ export default function App() {
         </section>
 
         {/* ===== ROADMAP ===== */}
-        <section id="roadmap" className="relative py-20 lg:py-24 border-t border-white/[.06]">
+        <section id="roadmap" className="relative py-14 sm:py-20 lg:py-24 border-t border-white/[.06]">
           <div className="mx-auto max-w-6xl px-5 lg:px-8">
             <div className="reveal text-center max-w-2xl mx-auto">
               <span className="inline-flex items-center gap-2 rounded-full pill px-3.5 py-1.5 text-[12px] font-semibold text-gold-200">Roadmap</span>
