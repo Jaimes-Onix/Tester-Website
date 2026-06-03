@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tester Smart Watch Pro — Engineered in the dark</title>
+  <meta name="description" content="Tester Smart Watch Pro — titanium-built, sensor-dense, and built to disappear on your wrist. Scroll to take it apart." />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <meta name="theme-color" content="#000000" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --black:#000; --ink:#050505;
+      --gold-100:#F7E8C2; --gold-300:#E6B979; --gold-500:#C6A559;
+      --text:#ECEAE6; --mute:#8d8d92; --line:rgba(255,255,255,.08);
+      --grad-gold:linear-gradient(135deg,#F7E8C2,#E6B979 45%,#C6A559);
+      --ease:cubic-bezier(.16,1,.3,1);
+      --font:"Montserrat",sans-serif;
+    }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    html,body { background:#000; }
+    body { font-family:var(--font); font-weight:500; color:var(--text); -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+    a { color:inherit; text-decoration:none; }
+    canvas,img,video { display:block; }
+    ::selection { background:rgba(230,185,121,.3); color:#fff; }
+    :focus-visible { outline:2px solid var(--gold-300); outline-offset:3px; }
+    .gold { background:var(--grad-gold); -webkit-background-clip:text; background-clip:text; color:transparent; }
+
+    /* ===== LOADER ===== */
+    #loader { position:fixed; inset:0; z-index:200; background:#000; display:grid; place-items:center; transition:opacity .8s var(--ease); }
+    #loader.done { opacity:0; pointer-events:none; }
+    .loader-inner { display:flex; flex-direction:column; align-items:center; gap:20px; }
+    .loader-brand { font-size:1.4rem; font-weight:800; letter-spacing:-.02em; display:flex; align-items:center; gap:10px; }
+    .loader-brand img { width:30px; height:30px; }
+    #loader-bar { width:200px; height:2px; background:rgba(255,255,255,.12); border-radius:99px; overflow:hidden; }
+    #loader-bar i { display:block; height:100%; width:0; background:var(--grad-gold); }
+    #loader-percent { font-size:.72rem; letter-spacing:.25em; color:var(--mute); }
+
+    /* ===== HEADER ===== */
+    .site-header { position:fixed; top:0; left:0; right:0; z-index:100; transition:background .4s var(--ease),border-color .4s var(--ease); border-bottom:1px solid transparent; }
+    .site-header.scrolled { background:rgba(5,5,5,.7); backdrop-filter:blur(14px); border-bottom-color:var(--line); }
+    .site-header nav { display:flex; align-items:center; justify-content:space-between; height:70px; width:min(1200px,92vw); margin:0 auto; }
+    .brand { display:flex; align-items:center; gap:9px; font-weight:800; font-size:1.05rem; }
+    .brand img { width:26px; height:26px; }
+    .nav-links { display:flex; gap:32px; }
+    .nav-links a { font-size:.85rem; font-weight:600; color:var(--mute); transition:color .3s var(--ease); }
+    .nav-links a:hover { color:#fff; }
+    .nav-cta { font-size:.82rem; font-weight:700; color:var(--mute); border:1px solid var(--line); padding:9px 18px; border-radius:99px; transition:.3s var(--ease); }
+    .nav-cta:hover { color:var(--gold-100); border-color:rgba(230,185,121,.5); background:rgba(230,185,121,.06); }
+    @media (max-width:860px){ .nav-links { display:none; } }
+
+    /* ===== CANVAS (fixed, scroll-scrubbed) ===== */
+    .canvas-wrap { position:fixed; inset:0; z-index:1; clip-path:circle(0% at 50% 46%); will-change:clip-path; }
+    #canvas { width:100%; height:100%; }
+    #dark-overlay { position:fixed; inset:0; z-index:2; background:#000; opacity:0; pointer-events:none; }
+
+    /* ===== CALLOUTS (annotations on the scroll-scrubbed watch) ===== */
+    .callouts { position:fixed; inset:0; z-index:4; pointer-events:none; }
+    .co { position:absolute; opacity:0; transform:translateY(6px); transition:transform .4s var(--ease); will-change:opacity,transform; }
+    .co .dot { position:relative; display:block; width:12px; height:12px; border-radius:50%; background:var(--gold-300); box-shadow:0 0 0 5px rgba(230,185,121,.16), 0 0 18px rgba(230,185,121,.6); }
+    .co .dot::after { content:""; position:absolute; inset:0; border-radius:50%; border:1px solid var(--gold-300); animation:ping 2.4s var(--ease) infinite; }
+    @keyframes ping { 0%{transform:scale(1);opacity:.7} 100%{transform:scale(2.7);opacity:0} }
+    .co .tag { position:absolute; left:24px; top:-12px; white-space:nowrap; background:rgba(8,8,8,.8); border:1px solid rgba(230,185,121,.32); backdrop-filter:blur(6px); padding:8px 14px; border-radius:10px; }
+    .co.flip .tag { left:auto; right:24px; text-align:right; }
+    .co .tag strong { display:block; font-size:.86rem; font-weight:700; color:#fff; }
+    .co .tag em { font-style:normal; font-size:.7rem; color:var(--mute); }
+    @media (max-width:768px){ .callouts { display:none; } }
+
+    /* ===== MARQUEE (fixed band, slides on scroll) ===== */
+    .marquee-wrap { position:fixed; top:50%; left:0; width:100%; transform:translateY(-50%); z-index:2; pointer-events:none; overflow:hidden; opacity:0; }
+    .marquee-text { white-space:nowrap; font-size:13vw; font-weight:900; line-height:1; text-transform:uppercase; letter-spacing:-.02em; color:transparent; -webkit-text-stroke:1.4px rgba(230,185,121,.4); will-change:transform; }
+
+    /* ===== HERO ===== */
+    .hero-standalone { position:relative; z-index:5; min-height:100vh; background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:100px 5vw 76px; }
+    .section-label { font-size:.72rem; font-weight:700; letter-spacing:.28em; text-transform:uppercase; color:var(--gold-300); }
+    .hero-heading { margin-top:18px; font-weight:900; letter-spacing:-.04em; line-height:.88; text-transform:uppercase; font-size:clamp(3rem,11.5vw,9.5rem); }
+    .hero-heading .eyebrow { display:block; font-size:clamp(1rem,3.4vw,2.2rem); letter-spacing:.14em; color:var(--mute); -webkit-text-fill-color:var(--mute); margin-bottom:.3rem; }
+    .hero-heading .w { display:inline-block; overflow:hidden; }
+    .hero-heading .w > span { display:inline-block; }
+    .hero-tagline { margin-top:26px; max-width:540px; color:var(--mute); font-size:clamp(1rem,1.6vw,1.18rem); }
+    .hero-cta { display:flex; gap:14px; margin-top:34px; flex-wrap:wrap; justify-content:center; }
+    .scroll-indicator { position:absolute; bottom:34px; left:50%; transform:translateX(-50%); font-size:.66rem; letter-spacing:.25em; text-transform:uppercase; color:var(--mute); display:flex; flex-direction:column; align-items:center; gap:8px; }
+    .scroll-indicator .bar { width:1px; height:40px; background:linear-gradient(var(--gold-300),transparent); animation:cue 2s var(--ease) infinite; }
+    @keyframes cue { 0%,100%{opacity:.3;transform:scaleY(.6)} 50%{opacity:1;transform:scaleY(1)} }
+
+    /* ===== BUTTONS ===== */
+    .btn { display:inline-flex; align-items:center; gap:10px; font-weight:700; font-size:.92rem; padding:15px 30px; border-radius:99px; cursor:pointer; border:0; position:relative; overflow:hidden; transition:transform .35s var(--ease),box-shadow .35s var(--ease),filter .35s var(--ease); }
+    .btn-gold { background:var(--grad-gold); color:#1a1308; box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 16px 40px -14px rgba(230,185,121,.6); }
+    .btn-gold:hover { transform:translateY(-3px); filter:brightness(1.06); box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 26px 60px -16px rgba(230,185,121,.78); }
+    .btn-gold:active { transform:translateY(-1px) scale(.98); }
+    .btn-gold::after { content:""; position:absolute; top:0; left:-130%; width:55%; height:100%; transform:skewX(-20deg); background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent); transition:left .7s var(--ease); }
+    .btn-gold:hover::after { left:160%; }
+    .btn-ghost { background:transparent; color:var(--gold-100); border:1px solid rgba(230,185,121,.45); }
+    .btn-ghost:hover { transform:translateY(-3px); border-color:var(--gold-300); background:rgba(230,185,121,.08); }
+
+    /* ===== SCROLL CONTAINER + SECTIONS ===== */
+    #scroll-container { position:relative; z-index:3; height:850vh; }
+    .scroll-section { position:absolute; left:0; width:100%; padding:0 5vw; }
+    .section-inner { max-width:38vw; }
+    .align-left { display:flex; justify-content:flex-start; }
+    .align-right { display:flex; justify-content:flex-end; text-align:right; }
+    .align-right .section-inner { margin-left:auto; }
+    .align-center { display:flex; justify-content:center; text-align:center; }
+    .align-center .section-inner { max-width:760px; }
+    .section-num { font-size:.72rem; font-weight:700; letter-spacing:.22em; text-transform:uppercase; color:var(--gold-300); }
+    .section-heading { margin-top:14px; font-weight:800; letter-spacing:-.03em; line-height:1.0; font-size:clamp(2.4rem,5.5vw,4.4rem); text-shadow:0 4px 40px rgba(0,0,0,.6); }
+    .section-body { margin-top:18px; color:#cfcdc8; font-size:1.05rem; line-height:1.6; text-shadow:0 2px 20px rgba(0,0,0,.8); }
+    .section-tag { display:inline-flex; align-items:center; gap:9px; margin-top:18px; font-size:.8rem; font-weight:600; color:var(--gold-300); }
+    .section-tag .ico { width:34px; height:34px; display:grid; place-items:center; border-radius:9px; border:1px solid rgba(230,185,121,.3); background:rgba(230,185,121,.08); }
+
+    /* stats */
+    .section-stats .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:30px; width:min(1100px,90vw); margin:0 auto; }
+    .stat { text-align:center; }
+    .stat-number { font-weight:900; letter-spacing:-.03em; font-size:clamp(2.6rem,6vw,4.6rem); line-height:1; }
+    .stat-suffix { font-size:.42em; vertical-align:super; color:var(--gold-300); margin-left:3px; }
+    .stat-label { margin-top:12px; font-size:.74rem; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); }
+    @media (max-width:720px){ .section-stats .stats-grid { grid-template-columns:repeat(2,1fr); gap:40px 18px; } }
+
+    /* CTA */
+    .section-cta { text-align:center; }
+    .section-cta .section-heading { font-size:clamp(2.8rem,9vw,7rem); text-transform:uppercase; }
+
+    /* ===== FOOTER (matches main site) ===== */
+    footer { position:relative; z-index:5; background:#000; border-top:1px solid var(--line); overflow:hidden; }
+    footer::before { content:""; position:absolute; inset-inline:0; top:0; height:1px; background:linear-gradient(90deg,transparent,rgba(230,185,121,.5),transparent); }
+    .foot-wrap { position:relative; width:min(1280px,92vw); margin:0 auto; padding:64px 0 32px; }
+    .foot-news { display:flex; align-items:center; justify-content:space-between; gap:28px; padding-bottom:48px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+    .foot-news h3 { font-size:clamp(1.5rem,3vw,1.75rem); font-weight:800; letter-spacing:-.03em; line-height:1.1; }
+    .foot-news .sub { margin-top:8px; color:var(--mute); font-size:.9rem; max-width:430px; }
+    .foot-form { display:flex; gap:10px; flex-wrap:wrap; }
+    .foot-field { display:flex; align-items:center; gap:10px; min-width:230px; border:1px solid var(--line); background:rgba(255,255,255,.03); border-radius:99px; padding:0 18px; height:50px; }
+    .foot-field input { background:transparent; border:0; outline:none; color:#fff; font-family:inherit; font-size:.9rem; width:100%; }
+    .foot-field input::placeholder { color:var(--mute); }
+    .foot-cols { display:grid; grid-template-columns:repeat(6,1fr); gap:40px; padding:56px 0; }
+    .foot-brandcol { grid-column:span 2; }
+    .foot-brandcol .brand { font-size:1.1rem; }
+    .foot-brandcol .desc { margin-top:18px; max-width:290px; color:var(--mute); font-size:.88rem; line-height:1.7; }
+    .foot-pill { margin-top:18px; display:inline-flex; align-items:center; gap:8px; border:1px solid rgba(230,185,121,.22); background:rgba(230,185,121,.06); border-radius:99px; padding:7px 14px; font-size:.7rem; font-weight:700; color:var(--gold-300); }
+    .foot-pill .dot { width:6px; height:6px; border-radius:50%; background:var(--gold-300); }
+    .socials { margin-top:24px; display:flex; gap:10px; }
+    .socials a { width:38px; height:38px; display:grid; place-items:center; border-radius:50%; border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--mute); transition:.3s var(--ease); }
+    .socials a:hover { color:var(--gold-300); border-color:rgba(230,185,121,.5); transform:translateY(-3px); }
+    .foot-col h4 { font-size:.72rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:#fff; }
+    .foot-col ul { list-style:none; margin-top:20px; display:flex; flex-direction:column; gap:12px; }
+    .foot-col a { font-size:.88rem; font-weight:500; color:var(--mute); transition:color .3s var(--ease); }
+    .foot-col a:hover { color:var(--gold-300); }
+    .foot-bottom { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding-top:30px; border-top:1px solid var(--line); color:rgba(141,141,146,.8); font-size:.8rem; }
+    .foot-bottom .right { display:flex; align-items:center; gap:22px; }
+    .foot-bottom .ops { display:inline-flex; align-items:center; gap:7px; }
+    .foot-bottom .ops .dot { width:8px; height:8px; border-radius:50%; background:rgba(74,222,128,.85); }
+    .foot-bottom a { display:inline-flex; align-items:center; gap:6px; transition:color .3s var(--ease); }
+    .foot-bottom a:hover { color:var(--gold-300); }
+    .foot-watermark { position:relative; user-select:none; padding:0 16px; margin-bottom:-2px; text-align:center; font-weight:900; letter-spacing:-.03em; line-height:1; font-size:min(19vw,250px); background:linear-gradient(180deg,rgba(230,185,121,.5),rgba(198,165,89,.04)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    @media (max-width:860px){ .foot-cols { grid-template-columns:repeat(2,1fr); gap:32px 24px; } .foot-brandcol { grid-column:span 2; } }
+
+    /* ===== MOBILE ===== */
+    @media (max-width:768px){
+      #scroll-container { height:620vh; }
+      .section-inner { max-width:none; width:100%; }
+      .align-left,.align-right,.align-center { justify-content:center; text-align:center; }
+      .align-right .section-inner { margin-left:0; }
+      .scroll-section .section-inner { background:radial-gradient(120% 120% at 50% 50%, rgba(0,0,0,.82), rgba(0,0,0,.5) 70%, transparent); padding:24px 18px; border-radius:18px; }
+    }
+
+    @media (prefers-reduced-motion:reduce){
+      .canvas-wrap { clip-path:none !important; }
+      .scroll-indicator .bar { animation:none; }
+    }
+  </style>
+</head>
+<body>
+  <!-- ===== LOADER ===== -->
+  <div id="loader">
+    <div class="loader-inner">
+      <div class="loader-brand"><img src="/tester-logo.png" alt="" /> Tester<span class="gold">.io</span></div>
+      <div id="loader-bar"><i></i></div>
+      <div id="loader-percent">0%</div>
+    </div>
+  </div>
+
+  <!-- ===== HEADER ===== -->
+  <header class="site-header" id="header">
+    <nav>
+      <a class="brand" href="/" aria-label="Back to Tester.io"><img src="/tester-logo.png" alt="" /> Tester<span class="gold">.io</span></a>
+      <div class="nav-links">
+        <a href="#f1" data-link>Features</a>
+        <a href="#stats" data-link>Specs</a>
+        <a href="#cta" data-link>Pre-order</a>
+        <a href="/anything.html">Genesis</a>
+      </div>
+      <a class="nav-cta" href="/">&larr; Main site</a>
+    </nav>
+  </header>
+
+  <!-- ===== CANVAS ===== -->
+  <div class="canvas-wrap" id="canvas-wrap"><canvas id="canvas"></canvas></div>
+  <div id="dark-overlay"></div>
+
+  <!-- ===== CALLOUTS ===== -->
+  <div class="callouts" id="callouts" aria-hidden="true">
+    <div class="co" data-enter="5" data-leave="14" style="left:50%;top:29%"><span class="dot"></span><span class="tag"><strong>Sapphire glass</strong><em>Scratch-proof crystal lens</em></span></div>
+    <div class="co flip" data-enter="17" data-leave="27" style="left:63%;top:56%"><span class="dot"></span><span class="tag"><strong>Titanium frame</strong><em>Grade-5 unibody chassis</em></span></div>
+    <div class="co" data-enter="33" data-leave="43" style="left:33%;top:58%"><span class="dot"></span><span class="tag"><strong>Sensor array</strong><em>7-channel health stack</em></span></div>
+    <div class="co flip" data-enter="47" data-leave="57" style="left:60%;top:40%"><span class="dot"></span><span class="tag"><strong>Power core</strong><em>14-day silicon cell</em></span></div>
+  </div>
+
+  <!-- ===== MARQUEE ===== -->
+  <div class="marquee-wrap" id="marquee-wrap" aria-hidden="true">
+    <div class="marquee-text" id="marquee-text">Tester Pro — Engineered in the dark — Tester Pro — Engineered in the dark —&nbsp;</div>
+  </div>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero-standalone" id="hero">
+    <span class="section-label" data-hero>01 / Tester Pro</span>
+    <h1 class="hero-heading">
+      <span class="eyebrow" data-hero>Tester</span>
+      <span class="w"><span data-hw>Smart</span></span> <span class="w"><span data-hw>Watch</span></span> <span class="w"><span data-hw class="gold">Pro</span></span>
+    </h1>
+    <p class="hero-tagline" data-hero>Titanium-built. Sensor-dense. Engineered to vanish on your wrist — and built to be taken apart.</p>
+    <div class="hero-cta" data-hero>
+      <a href="#cta" class="btn btn-gold" data-link>Pre-order now
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <a href="#f1" class="btn btn-ghost" data-link>See the teardown</a>
+    </div>
+    <div class="scroll-indicator" data-hero><span class="bar"></span>Scroll to dissect</div>
+  </section>
+
+  <!-- ===== SCROLL CONTAINER ===== -->
+  <div id="scroll-container">
+    <!-- Feature 1 — slide-left, left -->
+    <section class="scroll-section align-left" id="f1" data-enter="14" data-leave="27" data-animation="slide-left">
+      <div class="section-inner">
+        <span class="section-num">02 / Display</span>
+        <h2 class="section-heading">A screen that<br>disappears in sun.</h2>
+        <p class="section-body">A 1.5" sapphire-capped always-on AMOLED — readable in direct light, near-zero draw in standby.</p>
+        <span class="section-tag"><span class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#E6B979" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>Always-on AMOLED</span>
+      </div>
+    </section>
+
+    <!-- Feature 2 — slide-right, right -->
+    <section class="scroll-section align-right" id="f2" data-enter="30" data-leave="43" data-animation="slide-right">
+      <div class="section-inner">
+        <span class="section-num">03 / Power</span>
+        <h2 class="section-heading">Two weeks<br>on one charge.</h2>
+        <p class="section-body">A re-architected silicon power core delivers 14-day battery life — and 80% in just 30 minutes.</p>
+        <span class="section-tag"><span class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#E6B979" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z"/><path d="M9 13h6M9 17h4"/></svg></span>14-day battery</span>
+      </div>
+    </section>
+
+    <!-- Feature 3 — fade-up, left -->
+    <section class="scroll-section align-left" id="f3" data-enter="46" data-leave="58" data-animation="fade-up">
+      <div class="section-inner">
+        <span class="section-num">04 / Sensors</span>
+        <h2 class="section-heading">Clinical-grade,<br>on your wrist.</h2>
+        <p class="section-body">A 7-channel array tracks heart-rate, blood-oxygen, skin-temperature and ECG — continuously.</p>
+        <span class="section-tag"><span class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#E6B979" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2 5 4-12 2 7h6"/></svg></span>7-channel health stack</span>
+      </div>
+    </section>
+
+    <!-- Stats — stagger-up, center, dark overlay -->
+    <section class="scroll-section section-stats align-center" id="stats" data-enter="62" data-leave="76" data-animation="stagger-up" data-overlay="true">
+      <div class="stats-grid">
+        <div class="stat"><div><span class="stat-number" data-value="14">0</span><span class="stat-suffix">days</span></div><div class="stat-label">Battery life</div></div>
+        <div class="stat"><div><span class="stat-number" data-value="7">0</span><span class="stat-suffix">ch</span></div><div class="stat-label">Sensor channels</div></div>
+        <div class="stat"><div><span class="stat-number" data-value="100">0</span><span class="stat-suffix">m</span></div><div class="stat-label">Water resistance</div></div>
+        <div class="stat"><div><span class="stat-number" data-value="32">0</span><span class="stat-suffix">g</span></div><div class="stat-label">Total weight</div></div>
+      </div>
+    </section>
+
+    <!-- CTA — scale-up, center, persist -->
+    <section class="scroll-section section-cta align-center" id="cta" data-enter="82" data-leave="96" data-animation="scale-up">
+      <div class="section-inner">
+        <span class="section-num">05 / Pre-order</span>
+        <h2 class="section-heading">Wear the<br><span class="gold">future.</span></h2>
+        <p class="section-body" style="margin-left:auto;margin-right:auto;max-width:480px">Be among the first. Ships next quarter in titanium, graphite and gold.</p>
+        <a href="#" class="btn btn-gold" style="margin-top:28px;font-size:1rem;padding:18px 38px">Pre-order — $399
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===== FOOTER (matches main site) ===== -->
+  <footer>
+    <div class="foot-wrap">
+      <!-- newsletter -->
+      <div class="foot-news">
+        <div>
+          <h3>Stay ahead of the <span class="gold">curve</span></h3>
+          <p class="sub">Get token updates, roadmap drops, and early-access invites — straight to your inbox.</p>
+        </div>
+        <form class="foot-form" onsubmit="return false">
+          <label class="foot-field">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8A8A8F" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>
+            <input type="email" placeholder="Your email" aria-label="Your email" />
+          </label>
+          <button type="submit" class="btn btn-gold" style="padding:13px 26px;font-size:.85rem">Subscribe</button>
+        </form>
+      </div>
+
+      <!-- columns -->
+      <div class="foot-cols">
+        <div class="foot-brandcol">
+          <a class="brand" href="/" aria-label="Tester.io home"><img src="/tester-logo.png" alt="" style="width:26px;height:26px" /> Tester<span class="gold">.io</span></a>
+          <p class="desc">The future of leverage — built on Web3, powered by you. Trade, monitor, and hold the tokens you love.</p>
+          <span class="foot-pill"><span class="dot"></span> Built on Web3. Powered by You</span>
+          <div class="socials">
+            <a href="#" aria-label="X / Twitter"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h3l-7 8 8 12h-6l-5-7-6 7H2l8-9L2 2h6l4 6 6-6z"/></svg></a>
+            <a href="#" aria-label="Telegram"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3 2.7 11.7c-1 .4-1 1.7.1 2l4.8 1.5 1.8 5.8c.3.8 1.2 1 1.8.4l2.6-2.5 4.7 3.5c.7.5 1.6.1 1.8-.7l3-15.4c.2-1-.7-1.8-1.4-1.5zM9.7 14.3l8.2-5-6.7 6.2-.2 3.1z"/></svg></a>
+            <a href="#" aria-label="Discord"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 5a16 16 0 0 0-4-1.2l-.2.5a13 13 0 0 1 3.5 1.2 12 12 0 0 0-10.5 0A13 13 0 0 1 11.2 4.3L11 3.8A16 16 0 0 0 7 5C4.2 9 3.6 13 3.8 17a16 16 0 0 0 4.8 2.4l1-1.6a10 10 0 0 1-1.6-.8l.4-.3a11 11 0 0 0 9.3 0l.4.3a10 10 0 0 1-1.7.8l1 1.6A16 16 0 0 0 22.2 17c.3-4.7-.6-8.6-3.2-12zM9.5 14.5c-.8 0-1.4-.7-1.4-1.6s.6-1.7 1.4-1.7 1.5.8 1.4 1.7c0 .9-.6 1.6-1.4 1.6zm5 0c-.8 0-1.4-.7-1.4-1.6s.6-1.7 1.4-1.7 1.5.8 1.4 1.7c0 .9-.6 1.6-1.4 1.6z"/></svg></a>
+            <a href="#" aria-label="GitHub"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .8.1-.6.3-1.1.6-1.4-2.2-.2-4.6-1.1-4.6-5a3.9 3.9 0 0 1 1-2.7c-.1-.3-.5-1.3.1-2.7 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .6 1.4.2 2.4.1 2.7a3.9 3.9 0 0 1 1 2.7c0 3.9-2.3 4.8-4.6 5 .4.3.7.9.7 1.8v2.7c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg></a>
+          </div>
+        </div>
+        <div class="foot-col"><h4>Product</h4><ul>
+          <li><a href="/#features">Features</a></li>
+          <li><a href="/#token">Token</a></li>
+          <li><a href="/#how">How it works</a></li>
+          <li><a href="/#roadmap">Roadmap</a></li>
+        </ul></div>
+        <div class="foot-col"><h4>Company</h4><ul>
+          <li><a href="#">About</a></li><li><a href="#">Careers</a></li><li><a href="#">Blog</a></li><li><a href="#">Press kit</a></li>
+        </ul></div>
+        <div class="foot-col"><h4>Resources</h4><ul>
+          <li><a href="#">Whitepaper</a></li><li><a href="#">Docs</a></li><li><a href="#">Token metrics</a></li><li><a href="#">Support</a></li>
+        </ul></div>
+        <div class="foot-col"><h4>Legal</h4><ul>
+          <li><a href="#">Privacy</a></li><li><a href="#">Terms</a></li><li><a href="#">Cookies</a></li><li><a href="#">Disclosures</a></li>
+        </ul></div>
+      </div>
+
+      <!-- bottom bar -->
+      <div class="foot-bottom">
+        <span>© 2026 Tester.io. All rights reserved.</span>
+        <div class="right">
+          <span class="ops"><span class="dot"></span> All systems operational</span>
+          <a href="#hero" data-link>Back to top
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot-watermark" aria-hidden="true">Tester.io</div>
+  </footer>
+
+  <!-- ===== LIBS ===== -->
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script>
+  (function () {
+    var FRAME_COUNT = 121;
+    var FRAME_SPEED = 2.0;
+    var IMAGE_SCALE = 1.0; // true cover — fill the viewport edge-to-edge (no side gaps on wide screens)
+    var framePath = function (i) { return "/frames/frame_" + String(i + 1).padStart(4, "0") + ".webp"; };
+
+    var canvas = document.getElementById("canvas");
+    var ctx = canvas.getContext("2d");
+    var frames = new Array(FRAME_COUNT);
+    var currentFrame = -1;
+    var bgColor = "#000";
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    function resize() {
+      canvas.width = Math.floor(innerWidth * dpr);
+      canvas.height = Math.floor(innerHeight * dpr);
+      drawFrame(Math.max(currentFrame, 0));
+    }
+    function sampleBg(img) {
+      try {
+        var c = document.createElement("canvas"); c.width = c.height = 2;
+        var x = c.getContext("2d"); x.drawImage(img, 0, 0, 2, 2);
+        var d = x.getImageData(0, 0, 1, 1).data;
+        bgColor = "rgb(" + d[0] + "," + d[1] + "," + d[2] + ")";
+      } catch (e) {}
+    }
+    function drawFrame(index) {
+      var img = frames[index];
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      if (!img || !img.complete) return;
+      if (index % 20 === 0) sampleBg(img);
+      var cw = canvas.width, ch = canvas.height, iw = img.naturalWidth, ih = img.naturalHeight;
+      var scale = Math.max(cw / iw, ch / ih) * IMAGE_SCALE;
+      var dw = iw * scale, dh = ih * scale;
+      ctx.drawImage(img, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
+    }
+
+    // ---- preload ----
+    var loaded = 0;
+    var loader = document.getElementById("loader");
+    var bar = document.querySelector("#loader-bar i");
+    var pct = document.getElementById("loader-percent");
+    function hideLoader() { if (loader.classList.contains("done")) return; loader.classList.add("done"); start(); }
+    function onOne() {
+      loaded++;
+      var p = Math.round((loaded / FRAME_COUNT) * 100);
+      if (bar) bar.style.width = p + "%";
+      if (pct) pct.textContent = p + "%";
+      if (loaded >= FRAME_COUNT) hideLoader();
+    }
+    for (var i = 0; i < FRAME_COUNT; i++) {
+      (function (idx) {
+        var img = new Image();
+        img.onload = function () { if (idx === 0) { sampleBg(img); resize(); } onOne(); };
+        img.onerror = onOne;
+        img.src = framePath(idx);
+        frames[idx] = img;
+      })(i);
+    }
+    setTimeout(hideLoader, 6000); // safety fallback
+    window.addEventListener("resize", resize);
+    resize();
+
+    // header scrolled state (always works)
+    var header = document.getElementById("header");
+    addEventListener("scroll", function () { header.classList.toggle("scrolled", scrollY > 30); }, { passive: true });
+
+    var reduce = matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var lenis;
+
+    function start() {
+      var hasGSAP = window.gsap && window.ScrollTrigger;
+      if (!hasGSAP) { document.querySelector(".canvas-wrap").style.clipPath = "none"; drawFrame(0); return; }
+      gsap.registerPlugin(ScrollTrigger);
+
+      // Lenis smooth scroll
+      if (window.Lenis && !reduce && location.search.indexOf("nolenis") === -1) {
+        lenis = new Lenis({ duration: 1.15, easing: function (t) { return Math.min(1, 1.001 - Math.pow(2, -10 * t)); }, smoothWheel: true });
+        lenis.on("scroll", ScrollTrigger.update);
+        gsap.ticker.add(function (t) { lenis.raf(t * 1000); });
+        gsap.ticker.lagSmoothing(0);
+      }
+      // anchor smooth scroll
+      document.querySelectorAll("[data-link]").forEach(function (a) {
+        a.addEventListener("click", function (e) {
+          var id = a.getAttribute("href"); if (!id || id[0] !== "#") return;
+          var t = document.querySelector(id); if (!t) return; e.preventDefault();
+          if (lenis) lenis.scrollTo(t, { offset: -40 }); else t.scrollIntoView({ behavior: "smooth" });
+        });
+      });
+
+      var sc = document.getElementById("scroll-container");
+      var canvasWrap = document.querySelector(".canvas-wrap");
+      var hero = document.getElementById("hero");
+
+      // Hero load choreography
+      var tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+      tl.from("[data-hero]", { y: 30, opacity: 0, duration: 1, stagger: 0.1 })
+        .from("[data-hw]", { yPercent: 115, duration: 1.05, stagger: 0.1 }, 0.1);
+
+      if (reduce) { canvasWrap.style.clipPath = "none"; drawFrame(0); positionSections(); revealStatic(); return; }
+
+      // Frame scrub bound to scroll-container
+      ScrollTrigger.create({
+        trigger: sc, start: "top top", end: "bottom bottom", scrub: true,
+        onUpdate: function (self) {
+          var acc = Math.min(self.progress * FRAME_SPEED, 1);
+          var idx = Math.min(Math.floor(acc * FRAME_COUNT), FRAME_COUNT - 1);
+          if (idx !== currentFrame) { currentFrame = idx; requestAnimationFrame(function () { drawFrame(idx); }); }
+        }
+      });
+
+      // Hero fade + circle-wipe reveal (tied to hero's own scroll)
+      ScrollTrigger.create({
+        trigger: hero, start: "top top", end: "bottom top", scrub: true,
+        onUpdate: function (self) {
+          var p = self.progress;
+          hero.style.opacity = Math.max(0, 1 - p * 1.4);
+          var r = Math.min(140, p * 170);
+          canvasWrap.style.clipPath = "circle(" + r + "% at 50% 46%)";
+        }
+      });
+
+      positionSections();
+
+      // Marquee slide + fade
+      var mq = document.getElementById("marquee-wrap");
+      gsap.to("#marquee-text", { xPercent: -30, ease: "none", scrollTrigger: { trigger: sc, start: "top top", end: "bottom bottom", scrub: true } });
+      ScrollTrigger.create({
+        trigger: sc, start: "top top", end: "bottom bottom", scrub: true,
+        onUpdate: function (self) { var p = self.progress; mq.style.opacity = (p > 0.08 && p < 0.6) ? 0.5 : 0; }
+      });
+
+      // Dark overlay for stats
+      var overlay = document.getElementById("dark-overlay");
+      var st = document.getElementById("stats");
+      var en = parseFloat(st.dataset.enter) / 100, lv = parseFloat(st.dataset.leave) / 100, fr = 0.04;
+      ScrollTrigger.create({
+        trigger: sc, start: "top top", end: "bottom bottom", scrub: true,
+        onUpdate: function (self) {
+          var p = self.progress, o = 0;
+          if (p >= en - fr && p <= en) o = (p - (en - fr)) / fr * 0.9;
+          else if (p > en && p < lv) o = 0.9;
+          else if (p >= lv && p <= lv + fr) o = 0.9 * (1 - (p - lv) / fr);
+          overlay.style.opacity = o;
+        }
+      });
+
+      // Callouts — fade each annotation in/out within its own scroll window
+      var cos = gsap.utils.toArray(".co");
+      ScrollTrigger.create({
+        trigger: sc, start: "top top", end: "bottom bottom", scrub: true,
+        onUpdate: function (self) {
+          var p = self.progress, fade = 0.02;
+          cos.forEach(function (co) {
+            var ce = parseFloat(co.dataset.enter) / 100, cl = parseFloat(co.dataset.leave) / 100, o = 0;
+            if (p >= ce - fade && p < ce) o = (p - (ce - fade)) / fade;
+            else if (p >= ce && p <= cl) o = 1;
+            else if (p > cl && p <= cl + fade) o = 1 - (p - cl) / fade;
+            co.style.opacity = o;
+            co.style.transform = "translateY(" + (1 - o) * 6 + "px)";
+          });
+        }
+      });
+
+      // Section entrance animations
+      gsap.utils.toArray(".scroll-section").forEach(function (sec) {
+        setupSection(sec);
+      });
+
+      // Counters
+      gsap.utils.toArray(".stat-number").forEach(function (el) {
+        var to = parseFloat(el.dataset.value);
+        gsap.fromTo(el, { innerText: 0 }, {
+          innerText: to, duration: 1.8, ease: "power2.out", snap: { innerText: 1 },
+          scrollTrigger: { trigger: el.closest(".scroll-section"), start: "top 72%", once: true },
+          onUpdate: function () { el.innerText = Math.round(el.innerText); }
+        });
+      });
+
+      ScrollTrigger.refresh();
+    }
+
+    function positionSections() {
+      var h = document.getElementById("scroll-container").offsetHeight;
+      gsap.utils.toArray(".scroll-section").forEach(function (sec) {
+        var mid = (parseFloat(sec.dataset.enter) + parseFloat(sec.dataset.leave)) / 2 / 100;
+        sec.style.top = (mid * h) + "px";
+        sec.style.transform = "translateY(-50%)";
+      });
+    }
+
+    function setupSection(sec) {
+      var type = sec.dataset.animation, persist = sec.dataset.persist === "true";
+      var kids = sec.querySelectorAll(".section-num, .section-heading, .section-body, .section-tag, .btn, .stat");
+      var fromVars = { opacity: 0, duration: 0.9, ease: "power3.out", stagger: 0.12 };
+      if (type === "slide-left") fromVars.x = -80;
+      else if (type === "slide-right") fromVars.x = 80;
+      else if (type === "scale-up") { fromVars.scale = 0.85; fromVars.ease = "power2.out"; }
+      else fromVars.y = 56; // fade-up / stagger-up
+      gsap.from(kids, Object.assign({}, fromVars, {
+        scrollTrigger: { trigger: sec, start: "top 78%", end: "bottom 30%", toggleActions: persist ? "play none none none" : "play reverse play reverse" }
+      }));
+    }
+
+    function revealStatic() {
+      document.querySelectorAll(".stat-number").forEach(function (el) { el.innerText = el.dataset.value; });
+    }
+  })();
+  </script>
+</body>
+</html>

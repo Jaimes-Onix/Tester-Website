@@ -4,3 +4,8 @@ dist
 *.local
 temporary screenshots
 .claude
+
+# Secrets / API keys — NEVER commit these
+.env
+.env.*
+!.env.example

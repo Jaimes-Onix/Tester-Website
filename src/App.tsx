@@ -125,6 +125,7 @@ export default function App() {
               <a href="#token" className="hover:text-gold-200 transition-colors duration-300">Token</a>
               <a href="#how" className="hover:text-gold-200 transition-colors duration-300">How it works</a>
               <a href="#roadmap" className="hover:text-gold-200 transition-colors duration-300">Roadmap</a>
+              <a href="#products" className="hover:text-gold-200 transition-colors duration-300">Products</a>
               <button type="button" onClick={() => setContactOpen(true)} className="hover:text-gold-200 transition-colors duration-300">Contact</button>
             </div>
             <div className="flex items-center gap-2.5">
@@ -354,6 +355,30 @@ export default function App() {
                 <h3 className="text-[16px] font-bold">ICO Participants</h3>
                 <p className="mt-2 text-[13px] text-mute flex-1"><span className="text-gold-grad font-extrabold text-[20px]" data-count="370000" data-suffix="+">370,000+</span> believers and counting.</p>
                 <a href="#" className="mt-5 inline-flex items-center text-[12px] font-bold btn-ghost rounded-full px-5 py-2.5">Join our Telegram</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ===== PRODUCTS ===== */}
+        <section id="products" className="relative py-14 sm:py-20 lg:py-24 border-t border-white/[.06]">
+          <div className="mx-auto max-w-6xl px-5 lg:px-8">
+            <div className="reveal text-center max-w-2xl mx-auto">
+              <span className="inline-flex items-center gap-2 rounded-full pill px-3.5 py-1.5 text-[12px] font-semibold text-gold-200">Products</span>
+              <h2 className="mt-5 text-[32px] sm:text-[42px] font-extrabold tracking-tightest leading-[1.08]">Explore our <span className="text-gold-grad">product</span></h2>
+              <p className="mt-4 text-[15px] leading-[1.7] font-medium text-mute">A dedicated product built for leverage trading, real-time monitoring, and on-chain analytics.</p>
+            </div>
+
+            <div className="reveal mt-12 card rounded-3xl p-6 sm:p-8 grid md:grid-cols-2 gap-8 items-center max-w-4xl mx-auto">
+              <img src="https://placehold.co/600x400/0E0E0E/E6B979?text=Tester+Pro" alt="Tester Pro Terminal preview" className="w-full rounded-2xl border border-white/[.06]" />
+              <div>
+                <h3 className="text-[24px] sm:text-[28px] font-extrabold tracking-tightest">Tester Pro Terminal</h3>
+                <p className="mt-3 text-[14px] leading-[1.7] text-mute">The all-in-one terminal for serious traders — live data, advanced dashboards, and audit-ready reporting.</p>
+                <p className="mt-4 text-[20px] font-extrabold text-gold-grad">$49 <span className="text-[13px] font-medium text-mute">/ month</span></p>
+                <a href="/product.html" data-magnetic className="mt-6 inline-flex items-center gap-2 text-[13px] font-bold btn-gold rounded-full px-6 py-3">
+                  View Product
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                </a>
               </div>
             </div>
           </div>
