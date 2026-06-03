@@ -1,0 +1,16 @@
+import puppeteer from "puppeteer";
+import { fileURLToPath } from "url";
+import path from "path";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const OUT = path.join(__dirname, "..", "temporary screenshots");
+const b = await puppeteer.launch({ headless: "shell" });
+const p = await b.newPage();
+await p.setViewport({ width: 1200, height: 640, deviceScaleFactor: 1 });
+await p.goto("http://localhost:3000/Sights.html", { waitUntil: "networkidle0" });
+await p.waitForFunction(() => document.getElementById("loader")?.classList.contains("done"), { timeout: 30000 });
+await p.evaluate(() => document.querySelector(".recipe-grid")?.scrollIntoView({ block: "center" }));
+await new Promise(r => setTimeout(r, 900));
+const f = path.join(OUT, "screenshot-35-recipe.png");
+await p.screenshot({ path: f });
+console.log("Saved", f);
+await b.close();

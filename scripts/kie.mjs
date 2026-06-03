@@ -23,6 +23,25 @@ const BASE = "https://api.kie.ai";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /**
+ * Upload a base64 data URL to kie.ai temp storage (auto-deleted after 3 days).
+ * @param {string} dataUrl  e.g. "data:image/png;base64,...."
+ * @param {object} [opts] { uploadPath, fileName }
+ * @returns {Promise<string>} hosted downloadUrl
+ */
+export async function uploadBase64(dataUrl, { uploadPath = "images/tester", fileName } = {}) {
+  const res = await fetch(`https://kieai.redpandaai.co/api/file-base64-upload`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ base64Data: dataUrl, uploadPath, fileName }),
+  });
+  const json = await res.json();
+  if (!json?.success || !json?.data?.downloadUrl) {
+    throw new Error(`upload failed: ${json?.msg || JSON.stringify(json)}`);
+  }
+  return json.data.downloadUrl;
+}
+
+/**
  * Create a generation task and poll until it finishes.
  * @param {string} model  e.g. "google/nano-banana", "google/nano-banana-edit", "google/nano-banana-pro"
  * @param {object} input  model input, e.g. { prompt, aspect_ratio, output_format, image_urls }

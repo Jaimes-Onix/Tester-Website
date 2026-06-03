@@ -428,6 +428,29 @@ export default function App() {
           </div>
         </section>
 
+        {/* ===== SIGHTS ===== */}
+        <section id="sights" className="relative py-14 sm:py-20 lg:py-24 border-t border-white/[.06] overflow-hidden">
+          <div aria-hidden="true" className="absolute inset-0 dots opacity-40" />
+          <div className="relative mx-auto max-w-6xl px-5 lg:px-8">
+            <div className="reveal card rounded-3xl overflow-hidden grid md:grid-cols-2 items-stretch max-w-5xl mx-auto">
+              <div className="p-8 sm:p-12 flex flex-col justify-center">
+                <span className="inline-flex items-center gap-2 rounded-full pill px-3.5 py-1.5 text-[12px] font-semibold text-gold-200 w-fit"><span className="h-1.5 w-1.5 rounded-full bg-gold-300" /> Sights · 3D Landmarks</span>
+                <h2 className="mt-5 text-[30px] sm:text-[40px] font-extrabold tracking-tightest leading-[1.06]">Watch a wonder<br />rise from a <span className="text-gold-grad">blueprint</span></h2>
+                <p className="mt-4 max-w-md text-[15px] leading-[1.7] font-medium text-mute">A scroll-driven experiment: the Petronas Twin Towers built frame by frame, from technical schematic to steel and glass at night. Pure scroll, no video player — just the build.</p>
+                <a href="/Sights.html" data-magnetic className="mt-7 inline-flex items-center gap-2 text-[13px] font-bold btn-gold rounded-full px-6 py-3 w-fit">
+                  Explore Sights
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                </a>
+              </div>
+              <div className="relative min-h-[260px] md:min-h-0 bg-black">
+                <img src="/Second%20Frame%20Petronas%20Towers.png" alt="Petronas Twin Towers landmark render" className="absolute inset-0 h-full w-full object-cover opacity-90" />
+                <div aria-hidden="true" className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(14,14,14,1), rgba(14,14,14,.1) 40%, transparent), linear-gradient(0deg, rgba(0,0,0,.5), transparent 50%)" }} />
+                <div aria-hidden="true" className="absolute inset-0 mix-blend-multiply" style={{ background: "radial-gradient(60% 60% at 70% 40%, rgba(230,185,121,.18), transparent 70%)" }} />
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ===== ROADMAP ===== */}
         <section id="roadmap" className="relative py-14 sm:py-20 lg:py-24 border-t border-white/[.06]">
           <div className="mx-auto max-w-6xl px-5 lg:px-8">
