@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type MouseEvent } from "react";
 import ExpandingCards from "./components/ExpandingCards";
 import AuthModal from "./components/AuthModal";
 import ContactModal from "./components/ContactModal";
@@ -89,6 +89,19 @@ export default function App() {
 
   const [authMode, setAuthMode] = useState<"login" | "signup" | null>(null);
   const [contactOpen, setContactOpen] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+
+  /** Play the gold iris transition, then navigate to the Tester Tech page. */
+  const exploreTesterTech = (e: MouseEvent<HTMLAnchorElement>) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; // let new-tab / modified clicks behave normally
+    e.preventDefault();
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      window.location.href = "/TesterTech.html";
+      return;
+    }
+    setLeaving(true);
+    window.setTimeout(() => { window.location.href = "/TesterTech.html"; }, 820);
+  };
 
   return (
     <>
@@ -384,6 +397,37 @@ export default function App() {
           </div>
         </section>
 
+        {/* ===== TESTER TECH ===== */}
+        <section id="tester-tech" className="relative py-14 sm:py-20 lg:py-24 border-t border-white/[.06]">
+          <div className="mx-auto max-w-6xl px-5 lg:px-8">
+            <div className="reveal card rounded-3xl p-8 sm:p-12 grid md:grid-cols-2 gap-10 items-center max-w-5xl mx-auto overflow-hidden relative">
+              <div aria-hidden="true" className="absolute -right-20 -top-20 w-72 h-72 rounded-full" style={{ background: "radial-gradient(circle, rgba(230,185,121,.14), transparent 65%)", filter: "blur(12px)" }} />
+              <div className="relative">
+                <span className="inline-flex items-center gap-2 rounded-full pill px-3.5 py-1.5 text-[12px] font-semibold text-gold-200"><span className="h-1.5 w-1.5 rounded-full bg-gold-300" /> Tester Tech</span>
+                <h2 className="mt-5 text-[30px] sm:text-[40px] font-extrabold tracking-tightest leading-[1.06]">The engine behind<br />the <span className="text-gold-grad">leverage</span></h2>
+                <p className="mt-4 max-w-md text-[15px] leading-[1.7] font-medium text-mute">Sub-second execution, audited smart contracts, and cross-chain infrastructure — explore the engineering stack that powers Tester.io.</p>
+                <a href="/TesterTech.html" onClick={exploreTesterTech} data-magnetic className="mt-7 inline-flex items-center gap-2 text-[13px] font-bold btn-gold rounded-full px-6 py-3">
+                  Explore Tester Tech
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                </a>
+              </div>
+              <div className="relative grid grid-cols-2 gap-4">
+                {[
+                  { k: "< 80ms", v: "Avg. settlement" },
+                  { k: "99.99%", v: "Engine uptime" },
+                  { k: "12", v: "Chains routed" },
+                  { k: "Audited", v: "On-chain contracts" },
+                ].map((s) => (
+                  <div key={s.v} className="rounded-2xl chip px-5 py-6 text-center">
+                    <div className="text-[24px] sm:text-[28px] font-extrabold tracking-tight text-gold-grad leading-none">{s.k}</div>
+                    <div className="mt-2 text-[11px] uppercase tracking-[.14em] text-mute">{s.v}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ===== ROADMAP ===== */}
         <section id="roadmap" className="relative py-14 sm:py-20 lg:py-24 border-t border-white/[.06]">
           <div className="mx-auto max-w-6xl px-5 lg:px-8">
@@ -537,6 +581,16 @@ export default function App() {
         </svg>
         <span className="hidden sm:inline">Contact</span>
       </button>
+
+      {/* ===== PAGE-WIPE TRANSITION (→ Tester Tech) ===== */}
+      <div className={`page-wipe${leaving ? " active" : ""}`} aria-hidden={!leaving}>
+        <div className="page-wipe-inner">
+          <span className="pw-glyph" aria-hidden="true"><span /></span>
+          <div className="pw-title">Tester <span className="accent">Tech</span></div>
+          <div className="pw-sub">Smart devices, beautifully connected</div>
+          <div className="pw-bar"><i /></div>
+        </div>
+      </div>
 
       {/* ===== MODALS ===== */}
       <AuthModal

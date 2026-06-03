@@ -3,6 +3,9 @@
 ## Always Do First
 - **Invoke the `frontend-design` skill** before writing any frontend code, every session, no exceptions.
 
+## Project Skills
+- **`/tester-tech-page`** — recreates the Tester Tech smart-gadgets showcase at `public/TesterTech.html`, generating product images via Nano Banana/kie.ai (`scripts/generate-images.mjs`). Triggers: "recreate/rebuild/refresh the Tester Tech page". Won't auto-run (has side effects + API cost). Optional argument: a design tweak. Output: `public/TesterTech.html` + `public/generated/tester-*.png`.
+
 ## Reference Images
 - If a reference image is provided: match layout, spacing, typography, and color exactly. Swap in placeholder content (images via `https://placehold.co/`, generic copy). Do not improve or add to the design.
 - If no reference image: design from scratch with high craft (see guardrails below).
