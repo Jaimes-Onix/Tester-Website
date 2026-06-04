@@ -51,6 +51,13 @@ export default defineConfig({
   resolve: {
     alias: { "@": path.resolve(__dirname, "./src") },
   },
-  server: { port: 3000 },
+  server: {
+    port: 3000,
+    // Forward API calls to the Express backend (server.js) so the form's
+    // fetch("/api/contact") is same-origin in dev. Run `npm run server` alongside `npm run dev`.
+    proxy: {
+      "/api": { target: "http://localhost:5000", changeOrigin: true },
+    },
+  },
   preview: { port: 3000 },
 });

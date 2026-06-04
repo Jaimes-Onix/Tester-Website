@@ -163,6 +163,13 @@ html.intro, html.intro body { overflow:hidden; }
 .field--area { height:auto; align-items:flex-start; padding:14px; }
 .field--area textarea { resize:none; min-height:118px; line-height:1.6; }
 
+/* chat widget — typing indicator dots */
+.chat-dot { width:6px; height:6px; border-radius:50%; background:rgba(230,185,121,.7); display:inline-block;
+  animation:chatBlink 1.2s var(--ease-spring) infinite; }
+.chat-dot:nth-child(2) { animation-delay:.18s; }
+.chat-dot:nth-child(3) { animation-delay:.36s; }
+@keyframes chatBlink { 0%,60%,100% { opacity:.25; transform:translateY(0); } 30% { opacity:1; transform:translateY(-3px); } }
+
 /* social / oauth buttons */
 .btn-social { display:flex; align-items:center; justify-content:center; gap:10px; height:48px; border-radius:14px;
   border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.025); color:#EDEDED; font-weight:600; font-size:13.5px;

@@ -1,7 +1,8 @@
 import { useState, type MouseEvent } from "react";
 import ExpandingCards from "./components/ExpandingCards";
+import ContactForm from "./components/ContactForm";
+import ChatWidget from "./components/ChatWidget";
 import AuthModal from "./components/AuthModal";
-import ContactModal from "./components/ContactModal";
 import { useSiteEffects } from "./lib/effects";
 
 /** Tester.io brand logo mark — the real asset (brand_assets/Tester Logo.png).
@@ -88,8 +89,12 @@ export default function App() {
   useSiteEffects();
 
   const [authMode, setAuthMode] = useState<"login" | "signup" | null>(null);
-  const [contactOpen, setContactOpen] = useState(false);
   const [leaving, setLeaving] = useState(false);
+
+  /** Smoothly scroll to the contact form under the hero. */
+  const scrollToContact = () => {
+    document.getElementById("contact")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   /** Play the gold iris transition, then navigate to the Tester Tech page. */
   const exploreTesterTech = (e: MouseEvent<HTMLAnchorElement>) => {
@@ -139,10 +144,10 @@ export default function App() {
               <a href="#how" className="hover:text-gold-200 transition-colors duration-300">How it works</a>
               <a href="#roadmap" className="hover:text-gold-200 transition-colors duration-300">Roadmap</a>
               <a href="#products" className="hover:text-gold-200 transition-colors duration-300">Products</a>
-              <button type="button" onClick={() => setContactOpen(true)} className="hover:text-gold-200 transition-colors duration-300">Contact</button>
+              <button type="button" onClick={scrollToContact} className="hover:text-gold-200 transition-colors duration-300">Contact</button>
             </div>
             <div className="flex items-center gap-2.5">
-              <button type="button" onClick={() => setContactOpen(true)} className="hidden sm:inline-flex items-center text-[13px] 2xl:text-[16px] font-bold btn-ghost rounded-full px-5 py-2.5 2xl:px-7 2xl:py-3">Contact</button>
+              <button type="button" onClick={scrollToContact} className="hidden sm:inline-flex items-center text-[13px] 2xl:text-[16px] font-bold btn-ghost rounded-full px-5 py-2.5 2xl:px-7 2xl:py-3">Contact</button>
               <button type="button" onClick={() => setAuthMode("login")} data-magnetic className="inline-flex items-center text-[13px] 2xl:text-[16px] font-bold btn-gold rounded-full px-5 py-2.5 2xl:px-7 2xl:py-3">Log in</button>
             </div>
           </nav>
@@ -189,6 +194,9 @@ export default function App() {
             </div>
           </div>
         </section>
+
+        {/* ===== CONTACT FORM (under hero) ===== */}
+        <ContactForm />
 
         {/* ===== TRUSTED BY ===== */}
         <section className="relative py-12 lg:py-14">
@@ -629,19 +637,8 @@ export default function App() {
         </div>
       </footer>
 
-      {/* ===== FLOATING CONTACT BUTTON ===== */}
-      <button
-        type="button"
-        onClick={() => setContactOpen(true)}
-        data-magnetic
-        aria-label="Contact us"
-        className="fab btn-gold inline-flex items-center gap-2 rounded-full pl-4 pr-5 py-3.5 text-[13.5px] font-bold shadow-lg"
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A1308" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4L3 21l1.1-4.2A8.4 8.4 0 1 1 21 11.5z" />
-        </svg>
-        <span className="hidden sm:inline">Contact</span>
-      </button>
+      {/* ===== FLOATING CHAT WIDGET (guided chat → /api/contact) ===== */}
+      <ChatWidget />
 
       {/* ===== PAGE-WIPE TRANSITION (→ Tester Tech) ===== */}
       <div className={`page-wipe${leaving ? " active" : ""}`} aria-hidden={!leaving}>
@@ -660,7 +657,6 @@ export default function App() {
         onClose={() => setAuthMode(null)}
         onSwitch={(m) => setAuthMode(m)}
       />
-      <ContactModal open={contactOpen} onClose={() => setContactOpen(false)} />
     </>
   );
 }

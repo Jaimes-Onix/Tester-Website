@@ -9,3 +9,6 @@ temporary screenshots
 .env
 .env.*
 !.env.example
+
+# MCP config holds a Supabase access token — keep it out of git
+.mcp.json
