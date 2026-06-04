@@ -382,8 +382,29 @@ export default function App() {
               <p className="mt-4 text-[15px] leading-[1.7] font-medium text-mute">A dedicated product built for leverage trading, real-time monitoring, and on-chain analytics.</p>
             </div>
 
-            <div className="reveal mt-12 card rounded-3xl p-6 sm:p-8 grid md:grid-cols-2 gap-8 items-center max-w-4xl mx-auto">
-              <img src="https://placehold.co/600x400/0E0E0E/E6B979?text=Tester+Pro" alt="Tester Pro Terminal preview" className="w-full rounded-2xl border border-white/[.06]" />
+            <div className="reveal mt-12 card rounded-3xl p-8 sm:p-12 grid md:grid-cols-2 gap-10 items-center max-w-5xl mx-auto">
+              <div className="pv-stage aspect-[3/2]">
+                <video
+                  className="absolute inset-0 h-full w-full object-cover"
+                  autoPlay muted loop playsInline preload="metadata"
+                  poster="/generated/tester-watch-s9.png"
+                  aria-label="Tester Pro — smartwatch, dissected"
+                >
+                  <source src="/Smart%20Watch%20Dissection.mp4" type="video/mp4" />
+                </video>
+                <div className="pv-grid" aria-hidden="true" />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-black/30" />
+                <div className="pv-sheen" aria-hidden="true" />
+                <div className="pv-scan" aria-hidden="true" />
+                <span className="pv-corner tl" aria-hidden="true" /><span className="pv-corner tr" aria-hidden="true" />
+                <span className="pv-corner bl" aria-hidden="true" /><span className="pv-corner br" aria-hidden="true" />
+                <span className="pv-live"><i />Pro Series</span>
+                <div className="pv-ticker pv-specs" aria-hidden="true">
+                  <span>Titanium</span>
+                  <span>Sapphire glass</span>
+                  <span>38-hr battery</span>
+                </div>
+              </div>
               <div>
                 <h3 className="text-[24px] sm:text-[28px] font-extrabold tracking-tightest">Tester Pro Terminal</h3>
                 <p className="mt-3 text-[14px] leading-[1.7] text-mute">The all-in-one terminal for serious traders — live data, advanced dashboards, and audit-ready reporting.</p>
@@ -413,15 +434,32 @@ export default function App() {
               </div>
               <div className="relative grid grid-cols-2 gap-4">
                 {[
-                  { k: "< 80ms", v: "Avg. settlement" },
-                  { k: "99.99%", v: "Engine uptime" },
-                  { k: "12", v: "Chains routed" },
-                  { k: "Audited", v: "On-chain contracts" },
-                ].map((s) => (
-                  <div key={s.v} className="rounded-2xl chip px-5 py-6 text-center">
-                    <div className="text-[24px] sm:text-[28px] font-extrabold tracking-tight text-gold-grad leading-none">{s.k}</div>
-                    <div className="mt-2 text-[11px] uppercase tracking-[.14em] text-mute">{s.v}</div>
-                  </div>
+                  { img: "/generated/tester-watch-s9.png", name: "Tester Watch S9", tag: "Wearables", alt: "Tester Watch S9 smartwatch" },
+                  { img: "/generated/tester-vision-glasses.png", name: "Tester Vision", tag: "Smart glasses", alt: "Tester Vision smart glasses" },
+                  { img: "/generated/tester-voice.png", name: "Tester Voice", tag: "Assistant", alt: "Tester Voice smart speaker" },
+                  { img: "/generated/tester-buds.png", name: "Tester Buds Pro", tag: "Audio", alt: "Tester Buds Pro wireless earbuds" },
+                ].map((p) => (
+                  <a
+                    key={p.name}
+                    href="/TesterTech.html"
+                    onClick={exploreTesterTech}
+                    aria-label={`${p.name} — explore Tester Tech`}
+                    className="tt-photo group relative block overflow-hidden rounded-2xl border border-white/[.07] bg-[#0B0B0D] transition-[border-color,transform,box-shadow] duration-500 hover:-translate-y-1 hover:border-[rgba(230,185,121,.45)] hover:shadow-[0_28px_60px_-40px_rgba(230,185,121,.6)]"
+                  >
+                    <img
+                      src={p.img}
+                      alt={p.alt}
+                      loading="lazy"
+                      className="aspect-[4/3] w-full object-cover transition-transform duration-700 group-hover:scale-[1.06]"
+                      onError={(e) => { const t = e.currentTarget; t.onerror = null; t.src = `https://placehold.co/600x450/0B0B0D/E6B979?text=${encodeURIComponent(p.name)}&font=montserrat`; }}
+                    />
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                    <div className="pointer-events-none absolute inset-0 mix-blend-multiply bg-gradient-to-br from-transparent to-[#1a1308]/25" />
+                    <div className="absolute inset-x-3 bottom-3 flex items-end justify-between gap-2">
+                      <span className="text-[12px] font-bold leading-tight text-[#FBF3DE]">{p.name}</span>
+                      <span className="shrink-0 text-[9px] font-semibold uppercase tracking-[.16em] text-gold-200">{p.tag}</span>
+                    </div>
+                  </a>
                 ))}
               </div>
             </div>
@@ -608,7 +646,7 @@ export default function App() {
       {/* ===== PAGE-WIPE TRANSITION (→ Tester Tech) ===== */}
       <div className={`page-wipe${leaving ? " active" : ""}`} aria-hidden={!leaving}>
         <div className="page-wipe-inner">
-          <span className="pw-glyph" aria-hidden="true"><span /></span>
+          <img className="pw-logo" src="/tester-logo.png" alt="" aria-hidden="true" />
           <div className="pw-title">Tester <span className="accent">Tech</span></div>
           <div className="pw-sub">Smart devices, beautifully connected</div>
           <div className="pw-bar"><i /></div>
