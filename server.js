@@ -16,9 +16,12 @@
 import express from "express";
 import cors from "cors";
 import { google } from "googleapis";
+import { Resend } from "resend";
+import { createClient } from "@supabase/supabase-js";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { randomUUID, timingSafeEqual } from "node:crypto";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -53,6 +56,63 @@ const SA_KEY = (process.env.GOOGLE_PRIVATE_KEY || "").replace(/\\n/g, "\n");
 const SHEET_RANGE = process.env.GOOGLE_SHEET_RANGE || "Sheet1!A:D";
 
 const sheetsConfigured = Boolean(SHEET_ID && SA_EMAIL && SA_KEY);
+
+/* ------------------------------------------------------------------ *
+ * Resend (confirmation emails). Lazy client, only built when a key exists.
+ * ------------------------------------------------------------------ */
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const RESEND_FROM = process.env.RESEND_FROM || "Tester.io <onboarding@resend.dev>";
+const RESEND_REPLY_TO = process.env.RESEND_REPLY_TO || undefined;
+const resendConfigured = Boolean(RESEND_API_KEY);
+const resend = resendConfigured ? new Resend(RESEND_API_KEY) : null;
+
+/* ------------------------------------------------------------------ *
+ * Supabase admin client (service_role) — backend only. Used to LOG email
+ * interactions into email_events so everything stays organized (Step 8).
+ * ------------------------------------------------------------------ */
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseAdmin =
+  SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY
+    ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } })
+    : null;
+
+/* ------------------------------------------------------------------ *
+ * Admin dashboard auth. The password lives ONLY in .env.local (no VITE_
+ * prefix), so it never reaches the browser. The dashboard sends it on each
+ * /api/admin/* request; we compare server-side with a timing-safe check.
+ * ------------------------------------------------------------------ */
+const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD || "";
+const dashboardConfigured = Boolean(DASHBOARD_PASSWORD);
+
+function passwordMatches(supplied) {
+  if (!dashboardConfigured || !supplied) return false;
+  const a = Buffer.from(String(supplied));
+  const b = Buffer.from(DASHBOARD_PASSWORD);
+  // timingSafeEqual requires equal-length buffers, so length-check first.
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+// Express middleware: blocks /api/admin/* unless the correct password is sent
+// in the `x-dashboard-password` header (the dashboard stores it in sessionStorage
+// after a successful login and attaches it to every request).
+function requireAdmin(req, res, next) {
+  if (!dashboardConfigured) {
+    return res.status(503).json({ ok: false, error: "Dashboard password not configured on the server." });
+  }
+  if (!passwordMatches(req.get("x-dashboard-password"))) {
+    return res.status(401).json({ ok: false, error: "Unauthorized." });
+  }
+  next();
+}
+
+async function logEmailEvent({ email, kind, subject, resendId }) {
+  if (!supabaseAdmin) return;
+  const { error } = await supabaseAdmin
+    .from("email_events")
+    .insert({ email, kind, subject, resend_id: resendId });
+  if (error) console.warn("[email_events] log failed:", error.message);
+}
 
 /* ------------------------------------------------------------------ *
  * Google Sheets client (lazy — only built when credentials exist).
@@ -126,9 +186,239 @@ app.post("/api/contact", async (req, res) => {
   }
 });
 
+/* ------------------------------------------------------------------ *
+ * Confirmation email (Step 4). Sent after a successful submission.
+ * The body deliberately invites a reply (so we can track engagement later).
+ * ------------------------------------------------------------------ */
+function welcomeEmailHtml(firstName) {
+  return `
+  <div style="margin:0;padding:0;background:#0A0A0A;">
+    <div style="max-width:560px;margin:0 auto;padding:40px 24px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;color:#ECEAE6;">
+      <div style="font-size:18px;font-weight:800;letter-spacing:-.01em;margin-bottom:28px;">
+        Tester<span style="color:#E6B979;">.io</span>
+      </div>
+      <div style="background:linear-gradient(180deg,#141414,#0B0B0B);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:36px 30px;">
+        <div style="display:inline-block;font-size:12px;font-weight:700;color:#1A1308;background:linear-gradient(140deg,#F2DDA8,#C6A559);padding:6px 14px;border-radius:99px;">
+          ✓ You're on the list
+        </div>
+        <h1 style="margin:22px 0 0;font-size:26px;line-height:1.15;font-weight:800;letter-spacing:-.02em;color:#F7E8C2;">
+          Welcome, ${firstName} 👋
+        </h1>
+        <p style="margin:16px 0 0;font-size:15px;line-height:1.7;color:#cfcdc8;">
+          Thanks for reaching out to Tester.io — we've saved your details and you're
+          in line for early access to the Tester Pro Terminal.
+        </p>
+        <p style="margin:16px 0 0;font-size:15px;line-height:1.7;color:#cfcdc8;">
+          <strong style="color:#F2DDA8;">One quick favor:</strong> just hit
+          <em>reply</em> to this email and tell us the one thing you're most curious
+          about. A real human reads every reply — and it helps us build the right thing.
+        </p>
+        <p style="margin:26px 0 0;font-size:14px;line-height:1.7;color:#8d8d92;">
+          Talk soon,<br/>The Tester.io team
+        </p>
+      </div>
+      <p style="margin:20px 0 0;font-size:12px;color:#6f6f74;text-align:center;">
+        You're receiving this because you submitted the contact form at Tester.io.
+      </p>
+    </div>
+  </div>`;
+}
+
+async function sendWelcomeEmail({ name, email }) {
+  const firstName = (name.split(/\s+/)[0] || "there").slice(0, 40);
+  const { data, error } = await resend.emails.send({
+    from: RESEND_FROM,
+    to: [email],
+    subject: "You're on the list — welcome to Tester.io",
+    html: welcomeEmailHtml(firstName),
+    ...(RESEND_REPLY_TO ? { replyTo: RESEND_REPLY_TO } : {}),
+  });
+  if (error) throw new Error(error.message || JSON.stringify(error));
+  return data;
+}
+
+app.post("/api/send-welcome", async (req, res) => {
+  const name = String(req.body?.name || "").trim();
+  const email = String(req.body?.email || "").trim();
+
+  if (!name || !isEmail(email)) {
+    return res.status(400).json({ ok: false, error: "A valid name and email are required." });
+  }
+  if (!resendConfigured) {
+    console.warn("[welcome] Resend not configured — skipping email for", email);
+    return res.json({ ok: true, skipped: true });
+  }
+  try {
+    const data = await sendWelcomeEmail({ name, email });
+    console.log("[welcome] sent to", email, "→ id:", data?.id);
+    await logEmailEvent({
+      email,
+      kind: "welcome",
+      subject: "You're on the list — welcome to Tester.io",
+      resendId: data?.id,
+    });
+    return res.json({ ok: true, id: data?.id });
+  } catch (err) {
+    console.error("[welcome] failed:", err?.message || err);
+    return res.status(502).json({ ok: false, error: err?.message || "Email failed to send." });
+  }
+});
+
 // Simple health check
 app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, sheets: sheetsConfigured });
+  res.json({ ok: true, sheets: sheetsConfigured, resend: resendConfigured, dashboard: dashboardConfigured });
+});
+
+/* ================================================================== *
+ * ADMIN DASHBOARD API  (all routes below require the password header)
+ *
+ * Data is read with the service_role client (supabaseAdmin), so the
+ * browser never needs the anon key and we never open a public read
+ * policy. Newsletter drafts are stored in a local JSON file.
+ * ================================================================== */
+
+// --- Newsletter draft store: a tiny JSON file (no DB schema change needed) ---
+const newslettersFile = path.join(__dirname, "data", "newsletters.json");
+function readNewsletters() {
+  try {
+    return JSON.parse(fs.readFileSync(newslettersFile, "utf8"));
+  } catch {
+    return [];
+  }
+}
+function writeNewsletters(list) {
+  fs.mkdirSync(path.dirname(newslettersFile), { recursive: true });
+  fs.writeFileSync(newslettersFile, JSON.stringify(list, null, 2));
+}
+
+// POST /api/admin/login — verify the password, nothing more. The dashboard
+// keeps the password client-side and re-sends it on every request.
+app.post("/api/admin/login", (req, res) => {
+  if (!dashboardConfigured) {
+    return res.status(503).json({ ok: false, error: "Dashboard password not configured on the server." });
+  }
+  if (!passwordMatches(req.body?.password)) {
+    return res.status(401).json({ ok: false, error: "Incorrect password." });
+  }
+  res.json({ ok: true });
+});
+
+// Everything past this point needs the header.
+app.use("/api/admin", requireAdmin);
+
+function ensureSupabase(res) {
+  if (!supabaseAdmin) {
+    res.status(503).json({ ok: false, error: "Supabase is not configured on the server." });
+    return false;
+  }
+  return true;
+}
+
+// GET /api/admin/overview — headline stats for the Overview tab.
+app.get("/api/admin/overview", async (_req, res) => {
+  if (!ensureSupabase(res)) return;
+  try {
+    const head = { count: "exact", head: true };
+    const [fills, subs, emails, unsubs] = await Promise.all([
+      supabaseAdmin.from("contact_messages").select("*", head),
+      supabaseAdmin.from("contact_messages").select("*", head).eq("newsletter_subscribed", true),
+      supabaseAdmin.from("email_events").select("*", head),
+      supabaseAdmin.from("contact_messages").select("*", head).eq("newsletter_subscribed", false),
+    ]);
+    res.json({
+      ok: true,
+      stats: {
+        formFills: fills.count ?? 0,
+        subscribers: subs.count ?? 0,
+        emailsSent: emails.count ?? 0,
+        unsubscribed: unsubs.count ?? 0,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err?.message || "Failed to load overview." });
+  }
+});
+
+// GET /api/admin/submissions — everyone who filled the contact form.
+app.get("/api/admin/submissions", async (_req, res) => {
+  if (!ensureSupabase(res)) return;
+  const { data, error } = await supabaseAdmin
+    .from("contact_messages")
+    .select("id, name, email, message, newsletter_subscribed, replied, created_at")
+    .order("created_at", { ascending: false });
+  if (error) return res.status(500).json({ ok: false, error: error.message });
+  res.json({ ok: true, rows: data });
+});
+
+// GET /api/admin/subscribers — newsletter opt-ins only.
+app.get("/api/admin/subscribers", async (_req, res) => {
+  if (!ensureSupabase(res)) return;
+  const { data, error } = await supabaseAdmin
+    .from("contact_messages")
+    .select("id, name, email, subscribed_at, created_at")
+    .eq("newsletter_subscribed", true)
+    .order("created_at", { ascending: false });
+  if (error) return res.status(500).json({ ok: false, error: error.message });
+  res.json({ ok: true, rows: data });
+});
+
+// POST /api/admin/unsubscribe { id } — flip a subscriber off the list.
+app.post("/api/admin/unsubscribe", async (req, res) => {
+  if (!ensureSupabase(res)) return;
+  const id = String(req.body?.id || "");
+  if (!id) return res.status(400).json({ ok: false, error: "id is required." });
+  const { error } = await supabaseAdmin
+    .from("contact_messages")
+    .update({ newsletter_subscribed: false })
+    .eq("id", id);
+  if (error) return res.status(500).json({ ok: false, error: error.message });
+  res.json({ ok: true });
+});
+
+// GET /api/admin/email-events — the email log.
+app.get("/api/admin/email-events", async (_req, res) => {
+  if (!ensureSupabase(res)) return;
+  const { data, error } = await supabaseAdmin
+    .from("email_events")
+    .select("id, email, kind, subject, resend_id, created_at")
+    .order("created_at", { ascending: false });
+  if (error) return res.status(500).json({ ok: false, error: error.message });
+  res.json({ ok: true, rows: data });
+});
+
+// --- Newsletter draft CRUD (local JSON store) ---
+app.get("/api/admin/newsletters", (_req, res) => {
+  res.json({ ok: true, rows: readNewsletters() });
+});
+
+app.post("/api/admin/newsletters", (req, res) => {
+  const subject = String(req.body?.subject || "").slice(0, 200);
+  const body_html = String(req.body?.body_html || "").slice(0, 50000);
+  const now = new Date().toISOString();
+  const list = readNewsletters();
+  const row = { id: randomUUID(), subject, body_html, status: "draft", created_at: now, updated_at: now };
+  list.unshift(row);
+  writeNewsletters(list);
+  res.json({ ok: true, row });
+});
+
+app.put("/api/admin/newsletters/:id", (req, res) => {
+  const list = readNewsletters();
+  const i = list.findIndex((n) => n.id === req.params.id);
+  if (i === -1) return res.status(404).json({ ok: false, error: "Newsletter not found." });
+  if (req.body?.subject !== undefined) list[i].subject = String(req.body.subject).slice(0, 200);
+  if (req.body?.body_html !== undefined) list[i].body_html = String(req.body.body_html).slice(0, 50000);
+  list[i].updated_at = new Date().toISOString();
+  writeNewsletters(list);
+  res.json({ ok: true, row: list[i] });
+});
+
+app.delete("/api/admin/newsletters/:id", (req, res) => {
+  const list = readNewsletters();
+  const next = list.filter((n) => n.id !== req.params.id);
+  if (next.length === list.length) return res.status(404).json({ ok: false, error: "Newsletter not found." });
+  writeNewsletters(next);
+  res.json({ ok: true });
 });
 
 /* ------------------------------------------------------------------ *

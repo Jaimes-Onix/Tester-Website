@@ -25,12 +25,26 @@ export default function ContactForm() {
       name: String(data.get("name") || "").trim(),
       email: String(data.get("email") || "").trim(),
       message: String(data.get("message") || "").trim(),
+      newsletter: data.get("newsletter") != null, // checkbox ticked?
     };
 
-    // Basic client-side validation before sending.
+    // Client-side validation before sending. These mirror the database's RLS
+    // insert policy, so the user gets a clear message instead of a generic
+    // "couldn't save" error when the DB rejects malformed data.
     if (!payload.name || !payload.email || !payload.message) {
       setStatus("error");
       setError("Please fill in your name, email, and message.");
+      return;
+    }
+    const isEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+    if (!isEmail(payload.email)) {
+      setStatus("error");
+      setError("That email address doesn't look right — please use a real email.");
+      return;
+    }
+    if (payload.name.length > 120 || payload.message.length > 4000) {
+      setStatus("error");
+      setError("One of your fields is too long. Please shorten it.");
       return;
     }
 
@@ -46,6 +60,8 @@ export default function ContactForm() {
         name: payload.name,
         email: payload.email,
         message: payload.message,
+        newsletter_subscribed: payload.newsletter,
+        subscribed_at: payload.newsletter ? new Date().toISOString() : null,
       });
       if (error) throw error;
     };
@@ -65,9 +81,24 @@ export default function ContactForm() {
       });
     };
 
-    // Send to both at once and wait for both to settle (so the Sheets request
-    // isn't cancelled by the redirect below).
-    const [supabaseResult] = await Promise.allSettled([insertSupabase(), postSheets()]);
+    // ── Confirmation email: ask the backend (server.js) to send via Resend ─
+    // Best-effort — the email key is server-side only, so we POST to /api/send-welcome.
+    // If the backend isn't running, this just fails quietly; the submission is still saved.
+    const sendWelcome = async () => {
+      await fetch("/api/send-welcome", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: payload.name, email: payload.email }),
+      });
+    };
+
+    // Run all destinations at once and wait for them to settle (so none are
+    // cancelled by the redirect below). Supabase is the source of truth for success.
+    const [supabaseResult] = await Promise.allSettled([
+      insertSupabase(),
+      postSheets(),
+      sendWelcome(),
+    ]);
 
     if (supabaseResult.status === "rejected") {
       const reason = supabaseResult.reason;
@@ -146,6 +177,19 @@ export default function ContactForm() {
 
             <label className="field field--area">
               <textarea name="message" placeholder="Your message — what are you most curious about?" aria-label="Message" required />
+            </label>
+
+            <label className="flex items-start gap-2.5 cursor-pointer select-none px-0.5 pt-0.5">
+              <input
+                type="checkbox"
+                name="newsletter"
+                defaultChecked
+                className="mt-[2px] h-4 w-4 shrink-0 rounded accent-gold-300 cursor-pointer"
+              />
+              <span className="text-[12.5px] leading-[1.5] text-mute">
+                Subscribe me to product updates &amp; token drops.{" "}
+                <span className="text-white/70">No spam — unsubscribe anytime.</span>
+              </span>
             </label>
 
             {status === "error" && (

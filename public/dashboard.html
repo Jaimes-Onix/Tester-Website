@@ -1,0 +1,781 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Tester.io — Admin Dashboard</title>
+<link rel="icon" type="image/png" href="/favicon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    /* night backgrounds — from tailwind.config.js */
+    --night-950: #070707;
+    --night-900: #0a0a0a;
+    --night-850: #0e0e0e;
+    --night-800: #131313;
+    --night-700: #1a1a1a;
+    --night-600: #242424;
+    /* brand gold scale */
+    --gold-50: #fbf3de;
+    --gold-100: #f2dda8;
+    --gold-200: #edcb89;
+    --gold-300: #e6b979;
+    --gold-400: #d6ae63;
+    --gold-500: #c6a559;
+    --gold-600: #a9863f;
+    --gold-grad: linear-gradient(135deg, #f2dda8 0%, #e6b979 48%, #c6a559 100%);
+
+    --line: rgba(255, 255, 255, 0.07);
+    --line-2: rgba(255, 255, 255, 0.12);
+    --text: #ecebe7;
+    --mute: #8a8a8f;
+    --mute-2: #67666b;
+    --danger: #e0796f;
+    --ok: #8fd49b;
+
+    --r: 18px;
+    --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 24px 50px -28px rgba(0,0,0,.95), 0 6px 18px -12px rgba(198,165,89,.18);
+    --shadow-gold: 0 12px 30px -10px rgba(230,185,121,.5);
+    --ease: cubic-bezier(.2, .7, .2, 1);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background:
+      radial-gradient(1100px 680px at 85% -10%, rgba(230,185,121,.13), transparent 58%),
+      radial-gradient(820px 560px at -8% 112%, rgba(198,165,89,.07), transparent 55%),
+      var(--night-900);
+    color: var(--text);
+    font-family: "Montserrat", system-ui, sans-serif;
+    font-size: 14px; font-weight: 500; line-height: 1.6;
+    letter-spacing: -0.005em;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::after {
+    content: ""; position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+    opacity: .03; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  h1, h2, h3, h4 { margin: 0; font-weight: 800; letter-spacing: -0.03em; }
+  .num { font-weight: 800; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+  .gold-text { background: var(--gold-grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  button { font-family: inherit; cursor: pointer; }
+  a { color: var(--gold-300); }
+  img { display: block; }
+
+  /* ---- brand lockup ---- */
+  .brand { display: flex; align-items: center; gap: 11px; }
+  .brand img { height: 30px; width: auto; filter: drop-shadow(0 4px 10px rgba(230,185,121,.35)); }
+  .brand .word { font-weight: 800; font-size: 19px; letter-spacing: -0.04em; }
+
+  /* ============ LOGIN GATE ============ */
+  .gate { min-height: 100%; display: grid; place-items: center; padding: 24px; }
+  .gate-card {
+    width: min(430px, 100%);
+    background: linear-gradient(180deg, var(--night-800), var(--night-950));
+    border: 1px solid var(--line); border-radius: 26px; padding: 44px 36px;
+    box-shadow: var(--shadow); position: relative; overflow: hidden;
+    animation: rise .6s var(--ease) both;
+  }
+  .gate-card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(230,185,121,.7), transparent); }
+  .gate-logo { display: grid; place-items: center; gap: 16px; text-align: center; margin-bottom: 26px; }
+  .gate-logo img { height: 64px; filter: drop-shadow(0 10px 22px rgba(230,185,121,.4)); }
+  .gate h1 { font-size: 27px; line-height: 1.12; }
+  .gate p.sub { color: var(--mute); margin: 10px 0 26px; font-size: 13.5px; text-align: center; font-weight: 500; }
+  .gate h1, .gate .center { text-align: center; }
+  .field-label { display: block; font-size: 10.5px; text-transform: uppercase; letter-spacing: .16em; color: var(--mute); margin-bottom: 9px; font-weight: 700; }
+  .input {
+    width: 100%; background: var(--night-950); border: 1px solid var(--line-2); color: var(--text);
+    border-radius: 13px; padding: 13px 15px; font-size: 14px; font-family: inherit; font-weight: 500;
+    transition: border-color .18s var(--ease), box-shadow .18s var(--ease);
+  }
+  .input::placeholder { color: var(--mute-2); }
+  .input:focus { outline: none; border-color: var(--gold-500); box-shadow: 0 0 0 3px rgba(230,185,121,.16); }
+
+  .btn {
+    border: none; border-radius: 999px; padding: 13px 22px; font-weight: 700; font-size: 13.5px;
+    color: #211705; background: var(--gold-grad); box-shadow: var(--shadow-gold);
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    transition: transform .16s var(--ease), box-shadow .16s var(--ease), filter .16s var(--ease);
+  }
+  .btn:hover { transform: translateY(-1px); filter: brightness(1.05); box-shadow: 0 16px 34px -10px rgba(230,185,121,.6); }
+  .btn:active { transform: translateY(0) scale(.99); }
+  .btn:focus-visible { outline: 2px solid var(--gold-100); outline-offset: 2px; }
+  .btn.full { width: 100%; margin-top: 20px; padding: 14px; }
+  .btn.ghost { background: transparent; color: var(--gold-200); border: 1px solid var(--line-2); box-shadow: none; }
+  .btn.ghost:hover { border-color: var(--gold-500); background: rgba(230,185,121,.07); filter: none; box-shadow: none; }
+  .btn.sm { padding: 8px 15px; font-size: 12.5px; }
+  .btn.danger { background: transparent; color: var(--danger); border: 1px solid rgba(224,121,111,.32); box-shadow: none; }
+  .btn.danger:hover { background: rgba(224,121,111,.1); border-color: var(--danger); filter: none; box-shadow: none; }
+  .err { color: var(--danger); font-size: 13px; margin-top: 14px; min-height: 18px; text-align: center; font-weight: 600; }
+
+  /* ============ APP SHELL ============ */
+  .app { display: none; min-height: 100%; grid-template-columns: 264px 1fr; }
+  .app.show { display: grid; }
+  aside {
+    border-right: 1px solid var(--line);
+    background: linear-gradient(180deg, var(--night-950), var(--night-900));
+    padding: 26px 18px; position: sticky; top: 0; height: 100vh;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  aside .brand { padding: 4px 8px 24px; }
+  .nav-label { font-size: 10px; text-transform: uppercase; letter-spacing: .18em; color: var(--mute-2); font-weight: 700; padding: 6px 12px 8px; }
+  nav { display: flex; flex-direction: column; gap: 3px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+    background: transparent; border: 1px solid transparent; color: var(--mute);
+    padding: 10px 12px; border-radius: 12px; font-size: 13.5px; font-weight: 600;
+    transition: background .15s var(--ease), color .15s var(--ease), border-color .15s var(--ease);
+  }
+  .nav-item svg { width: 18px; height: 18px; opacity: .85; flex-shrink: 0; }
+  .nav-item:hover { color: var(--text); background: rgba(255,255,255,.035); }
+  .nav-item.active { color: #1a1308; background: var(--gold-grad); border-color: transparent; box-shadow: var(--shadow-gold); font-weight: 700; }
+  .nav-item.active svg { opacity: 1; }
+  .nav-foot { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--line); }
+
+  main { padding: 34px 42px 70px; max-width: 1220px; }
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
+  .eyebrow { font-size: 10.5px; text-transform: uppercase; letter-spacing: .2em; color: var(--gold-500); font-weight: 700; }
+  .page-head h2 { font-size: 32px; margin-top: 8px; }
+  .page-head p { color: var(--mute); margin: 6px 0 0; font-size: 13.5px; font-weight: 500; }
+
+  .view { display: none; }
+  .view.active { display: block; animation: rise .42s var(--ease) both; }
+
+  /* stat cards */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .stat {
+    background: linear-gradient(180deg, var(--night-800), var(--night-950));
+    border: 1px solid var(--line); border-radius: var(--r); padding: 22px;
+    box-shadow: var(--shadow); position: relative; overflow: hidden;
+    transition: transform .2s var(--ease), border-color .2s var(--ease);
+  }
+  .stat::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 2px; background: var(--gold-grad); opacity: .5; transform: scaleX(.4); transform-origin: left; transition: transform .3s var(--ease), opacity .3s var(--ease); }
+  .stat:hover { transform: translateY(-2px); border-color: var(--line-2); }
+  .stat:hover::before { transform: scaleX(1); opacity: 1; }
+  .stat .ic { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; background: rgba(230,185,121,.12); color: var(--gold-300); margin-bottom: 18px; border: 1px solid rgba(230,185,121,.18); }
+  .stat .ic svg { width: 19px; height: 19px; }
+  .stat .num { font-size: 42px; line-height: 1; }
+  .stat .lbl { color: var(--mute); font-size: 12.5px; margin-top: 9px; font-weight: 600; }
+
+  /* layout helpers */
+  .grid-2 { display: grid; grid-template-columns: 1.7fr 1fr; gap: 16px; margin-top: 16px; }
+
+  /* card / table */
+  .card {
+    background: linear-gradient(180deg, var(--night-800), var(--night-950));
+    border: 1px solid var(--line); border-radius: var(--r);
+    box-shadow: var(--shadow); overflow: hidden; margin-top: 22px;
+  }
+  .grid-2 .card { margin-top: 0; }
+  .card-head { padding: 17px 22px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .card-head h3 { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; }
+  .count-pill { font-size: 11px; color: #1a1308; background: var(--gold-grad); padding: 4px 11px; border-radius: 999px; font-weight: 700; }
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: .13em; color: var(--mute-2); font-weight: 700; padding: 13px 22px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  td { padding: 15px 22px; border-bottom: 1px solid rgba(255,255,255,.045); font-size: 13.5px; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr { transition: background .12s var(--ease); }
+  tbody tr:hover { background: rgba(230,185,121,.035); }
+  .nm { font-weight: 700; letter-spacing: -0.01em; }
+  .em { color: var(--mute); }
+  .msg { color: var(--mute); max-width: 380px; }
+  .when { color: var(--mute-2); white-space: nowrap; font-size: 12.5px; font-weight: 500; }
+  .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line-2); color: var(--mute); white-space: nowrap; }
+  .badge.on { color: var(--ok); border-color: rgba(143,212,155,.3); background: rgba(143,212,155,.08); }
+  .badge.gold { color: var(--gold-100); border-color: rgba(230,185,121,.3); background: rgba(230,185,121,.1); }
+  .badge.off { color: var(--mute-2); }
+
+  /* avatar chip for names */
+  .who { display: flex; align-items: center; gap: 11px; }
+  .av { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; font-size: 12px; font-weight: 800; color: #1a1308; background: var(--gold-grad); flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(230,185,121,.5); }
+
+  .empty { padding: 54px 20px; text-align: center; color: var(--mute); font-weight: 500; }
+  .empty .big { font-weight: 800; font-size: 18px; color: var(--text); margin-bottom: 6px; letter-spacing: -0.02em; }
+
+  /* newsletter-health panel */
+  .health { padding: 22px; }
+  .health .row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
+  .health .row .k { color: var(--mute); font-size: 12.5px; font-weight: 600; }
+  .health .row .v { font-size: 15px; font-weight: 800; }
+  .bar { height: 10px; border-radius: 999px; background: var(--night-700); overflow: hidden; margin: 8px 0 20px; border: 1px solid var(--line); }
+  .bar > span { display: block; height: 100%; background: var(--gold-grad); border-radius: 999px; width: 0; transition: width .8s var(--ease); }
+  .legend { display: flex; gap: 18px; font-size: 12px; color: var(--mute); font-weight: 600; }
+  .legend i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; margin-right: 6px; vertical-align: middle; }
+
+  /* recent list */
+  .recent { display: flex; flex-direction: column; }
+  .recent .item { display: flex; align-items: center; gap: 13px; padding: 13px 22px; border-bottom: 1px solid rgba(255,255,255,.045); }
+  .recent .item:last-child { border-bottom: none; }
+  .recent .meta { min-width: 0; flex: 1; }
+  .recent .meta .nm { font-size: 13.5px; }
+  .recent .meta .em { font-size: 12px; }
+
+  /* newsletter editor */
+  .editor-grid { display: grid; gap: 18px; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; border: 1px solid var(--line-2); border-bottom: none; border-radius: 13px 13px 0 0; background: var(--night-950); }
+  .tool { background: transparent; border: 1px solid transparent; color: var(--mute); width: 36px; height: 34px; border-radius: 9px; font-size: 14px; font-weight: 700; display: grid; place-items: center; transition: background .12s var(--ease), color .12s var(--ease); }
+  .tool:hover { background: rgba(230,185,121,.1); color: var(--gold-100); }
+  .tool svg { width: 16px; height: 16px; }
+  #editor {
+    min-height: 300px; background: var(--night-950); border: 1px solid var(--line-2); border-radius: 0 0 13px 13px;
+    padding: 20px; font-size: 14.5px; line-height: 1.75; color: var(--text); outline: none; font-weight: 500;
+  }
+  #editor:focus { border-color: var(--gold-500); box-shadow: 0 0 0 3px rgba(230,185,121,.12); }
+  #editor:empty::before { content: attr(data-ph); color: var(--mute-2); }
+  #editor h2 { font-size: 22px; margin: 8px 0; }
+  #editor a { color: var(--gold-300); }
+  .editor-actions { display: flex; gap: 10px; align-items: center; }
+  .saved-card { padding: 18px 22px; border-bottom: 1px solid rgba(255,255,255,.045); display: flex; gap: 16px; align-items: flex-start; justify-content: space-between; }
+  .saved-card:last-child { border-bottom: none; }
+  .saved-card .preview { color: var(--mute); font-size: 13px; margin-top: 5px; max-height: 42px; overflow: hidden; font-weight: 500; }
+  .saved-card h4 { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+  .saved-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+  /* confirmation modal */
+  .modal-back {
+    position: fixed; inset: 0; z-index: 10001; display: none; place-items: center; padding: 24px;
+    background: rgba(7, 7, 7, 0.72); backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+    animation: fade .2s ease;
+  }
+  .modal-back.show { display: grid; }
+  .modal {
+    width: min(390px, 100%); background: linear-gradient(180deg, var(--night-800), var(--night-950));
+    border: 1px solid var(--line-2); border-radius: 22px; padding: 30px 28px; box-shadow: var(--shadow);
+    text-align: center; animation: rise .28s var(--ease) both; position: relative; overflow: hidden;
+  }
+  .modal::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(230,185,121,.6), transparent); }
+  .modal .mic { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; margin: 0 auto 16px; background: rgba(230,185,121,.12); border: 1px solid rgba(230,185,121,.2); color: var(--gold-300); }
+  .modal .mic svg { width: 22px; height: 22px; }
+  .modal h3 { font-size: 20px; font-weight: 800; letter-spacing: -.02em; }
+  .modal p { color: var(--mute); font-size: 13.5px; line-height: 1.6; margin: 9px 0 24px; font-weight: 500; }
+  .modal-actions { display: flex; gap: 10px; }
+  .modal-actions .btn { flex: 1; }
+
+  .toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--night-700); border: 1px solid var(--line-2); color: var(--text);
+    padding: 13px 22px; border-radius: 13px; box-shadow: var(--shadow); font-size: 13.5px; font-weight: 600;
+    opacity: 0; pointer-events: none; transition: opacity .25s var(--ease), transform .25s var(--ease); z-index: 10000;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.err { border-color: rgba(224,121,111,.4); color: var(--danger); }
+
+  .spin { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+  @media (max-width: 900px) {
+    .app.show { grid-template-columns: 1fr; }
+    aside { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px; }
+    aside .brand { width: 100%; padding-bottom: 12px; }
+    .nav-label, .nav-foot { display: none; }
+    nav { flex-direction: row; flex-wrap: wrap; }
+    .nav-item span { display: none; }
+    main { padding: 26px 18px 60px; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN GATE ============ -->
+<section class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-logo">
+      <img src="/tester-logo.png" alt="Tester.io" />
+      <div class="brand"><span class="word">Tester<span class="gold-text">.io</span></span></div>
+    </div>
+    <h1>Admin <span class="gold-text">Dashboard</span></h1>
+    <p class="sub">Enter the dashboard password to view submissions, subscribers, and email activity.</p>
+    <form id="loginForm" autocomplete="off">
+      <label class="field-label" for="pw">Dashboard password</label>
+      <input class="input" type="password" id="pw" placeholder="••••••••••••" autocomplete="current-password" />
+      <button class="btn full" type="submit" id="loginBtn">Access Dashboard</button>
+      <div class="err" id="loginErr"></div>
+    </form>
+  </div>
+</section>
+
+<!-- ============ APP ============ -->
+<div class="app" id="app">
+  <aside>
+    <div class="brand">
+      <img src="/tester-logo.png" alt="Tester.io" />
+      <span class="word">Tester<span class="gold-text">.io</span></span>
+    </div>
+    <div class="nav-label">Menu</div>
+    <nav id="nav">
+      <button class="nav-item active" data-view="overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg><span>Overview</span></button>
+      <button class="nav-item" data-view="submissions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 9v11"/></svg><span>Form Submissions</span></button>
+      <button class="nav-item" data-view="subscribers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><path d="M16 8h5M18.5 5.5v5"/></svg><span>Subscribers</span></button>
+      <button class="nav-item" data-view="emails"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg><span>Email Log</span></button>
+      <button class="nav-item" data-view="newNewsletter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg><span>New Newsletter</span></button>
+      <button class="nav-item" data-view="savedNewsletters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11l3 3v13H5z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg><span>Saved Newsletters</span></button>
+    </nav>
+    <div class="nav-foot">
+      <button class="nav-item" id="logoutBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg><span>Log out</span></button>
+    </div>
+  </aside>
+
+  <main>
+    <!-- OVERVIEW -->
+    <section class="view active" id="view-overview">
+      <div class="page-head">
+        <div><div class="eyebrow">Dashboard</div><h2>Overview</h2><p>Form fills, subscribers, emails sent, and unsubscribes at a glance.</p></div>
+        <button class="btn ghost sm" data-refresh="overview">Refresh</button>
+      </div>
+      <div class="stats" id="statGrid">
+        <div class="stat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="M4 9h16"/></svg></div><div class="num" data-stat="formFills">0</div><div class="lbl">Form fills</div></div>
+        <div class="stat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/></svg></div><div class="num" data-stat="subscribers">0</div><div class="lbl">Subscribers</div></div>
+        <div class="stat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg></div><div class="num" data-stat="emailsSent">0</div><div class="lbl">Emails sent</div></div>
+        <div class="stat"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><path d="m21 7-4 4M17 7l4 4"/></svg></div><div class="num" data-stat="unsubscribed">0</div><div class="lbl">Unsubscribed</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card" style="margin-top:0">
+          <div class="card-head"><h3>Recent submissions</h3><button class="btn ghost sm" data-go="submissions">View all</button></div>
+          <div class="recent" id="recentList"><div class="empty">Loading…</div></div>
+        </div>
+        <div class="card" style="margin-top:0">
+          <div class="card-head"><h3>Newsletter health</h3></div>
+          <div class="health" id="healthPanel">
+            <div class="row"><span class="k">Subscribe rate</span><span class="v gold-text num" id="subRate">—</span></div>
+            <div class="bar"><span id="subBar"></span></div>
+            <div class="legend">
+              <span><i style="background:var(--gold-300)"></i><span id="legSub">Subscribed</span></span>
+              <span><i style="background:var(--night-600)"></i><span id="legUnsub">Unsubscribed</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SUBMISSIONS -->
+    <section class="view" id="view-submissions">
+      <div class="page-head">
+        <div><div class="eyebrow">Contacts</div><h2>Form Submissions</h2><p>Everyone who filled the contact form.</p></div>
+        <button class="btn ghost sm" data-refresh="submissions">Refresh</button>
+      </div>
+      <div class="card"><div class="card-head"><h3>All submissions</h3><span class="count-pill" id="subsCount">—</span></div><div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Message</th><th>List</th><th>Replied</th><th>Received</th></tr></thead><tbody id="submissionsBody"></tbody></table></div></div>
+    </section>
+
+    <!-- SUBSCRIBERS -->
+    <section class="view" id="view-subscribers">
+      <div class="page-head">
+        <div><div class="eyebrow">Newsletter</div><h2>Subscribers</h2><p>Newsletter opt-ins. Use unsubscribe to remove someone from the list.</p></div>
+        <button class="btn ghost sm" data-refresh="subscribers">Refresh</button>
+      </div>
+      <div class="card"><div class="card-head"><h3>Active subscribers</h3><span class="count-pill" id="subrCount">—</span></div><div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Subscribed</th><th></th></tr></thead><tbody id="subscribersBody"></tbody></table></div></div>
+    </section>
+
+    <!-- EMAIL LOG -->
+    <section class="view" id="view-emails">
+      <div class="page-head">
+        <div><div class="eyebrow">Activity</div><h2>Email Log</h2><p>Record of every email sent (welcome &amp; follow-ups).</p></div>
+        <button class="btn ghost sm" data-refresh="emails">Refresh</button>
+      </div>
+      <div class="card"><div class="card-head"><h3>Sent emails</h3><span class="count-pill" id="emailCount">—</span></div><div class="tbl-wrap"><table><thead><tr><th>Recipient</th><th>Type</th><th>Subject</th><th>Sent</th></tr></thead><tbody id="emailsBody"></tbody></table></div></div>
+    </section>
+
+    <!-- NEW NEWSLETTER -->
+    <section class="view" id="view-newNewsletter">
+      <div class="page-head">
+        <div><div class="eyebrow">Compose</div><h2 id="composeTitle">New Newsletter</h2><p>Write a newsletter and save it as a draft.</p></div>
+      </div>
+      <div class="card" style="padding: 24px;">
+        <div class="editor-grid">
+          <div>
+            <label class="field-label" for="nlSubject">Subject</label>
+            <input class="input" id="nlSubject" placeholder="e.g. Tester.io — December product drop" />
+          </div>
+          <div>
+            <label class="field-label">Body</label>
+            <div class="toolbar" id="toolbar">
+              <button class="tool" type="button" data-cmd="bold" title="Bold"><b>B</b></button>
+              <button class="tool" type="button" data-cmd="italic" title="Italic"><i>I</i></button>
+              <button class="tool" type="button" data-cmd="underline" title="Underline"><u>U</u></button>
+              <button class="tool" type="button" data-block="h2" title="Heading">H</button>
+              <button class="tool" type="button" data-cmd="insertUnorderedList" title="Bulleted list">•</button>
+              <button class="tool" type="button" data-cmd="insertOrderedList" title="Numbered list">1.</button>
+              <button class="tool" type="button" data-link title="Link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/></svg></button>
+            </div>
+            <div id="editor" contenteditable="true" data-ph="Write your newsletter here…"></div>
+          </div>
+          <div class="editor-actions">
+            <button class="btn sm" id="saveNlBtn">Save draft</button>
+            <button class="btn ghost sm" id="clearNlBtn">Clear</button>
+            <span class="when" id="editingTag"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SAVED NEWSLETTERS -->
+    <section class="view" id="view-savedNewsletters">
+      <div class="page-head">
+        <div><div class="eyebrow">Drafts</div><h2>Saved Newsletters</h2><p>All saved drafts — edit or delete.</p></div>
+        <button class="btn ghost sm" data-refresh="savedNewsletters">Refresh</button>
+      </div>
+      <div class="card"><div class="card-head"><h3>Drafts</h3><span class="count-pill" id="nlCount">—</span></div><div id="newslettersBody"></div></div>
+    </section>
+  </main>
+</div>
+
+<!-- Confirmation modal -->
+<div class="modal-back" id="modalBack">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="mic" id="modalIcon"></div>
+    <h3 id="modalTitle">Are you sure?</h3>
+    <p id="modalMsg"></p>
+    <div class="modal-actions">
+      <button class="btn ghost" id="modalCancel" type="button">Cancel</button>
+      <button class="btn" id="modalOk" type="button">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  "use strict";
+  var API = "/api/admin";
+  var KEY = "tester_dash_pw";
+
+  // ---------- helpers ----------
+  function $(s, r) { return (r || document).querySelector(s); }
+  function $all(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+  function esc(v) {
+    return String(v == null ? "" : v).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function fmtDate(iso) {
+    if (!iso) return "—";
+    var d = new Date(iso);
+    if (isNaN(d)) return "—";
+    return d.toLocaleString(undefined, { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  }
+  function initials(name) {
+    var p = String(name || "").trim().split(/\s+/);
+    return ((p[0] || "?")[0] + (p[1] ? p[1][0] : "")).toUpperCase();
+  }
+  function pw() { return sessionStorage.getItem(KEY) || ""; }
+
+  var toastEl = $("#toast"), toastTimer;
+  function toast(msg, isErr) {
+    toastEl.textContent = msg;
+    toastEl.className = "toast show" + (isErr ? " err" : "");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.className = "toast"; }, 2600);
+  }
+
+  // ---------- branded confirmation dialog (returns a Promise<boolean>) ----------
+  var modalBack = $("#modalBack");
+  function showConfirm(opts) {
+    opts = opts || {};
+    $("#modalTitle").textContent = opts.title || "Are you sure?";
+    $("#modalMsg").textContent = opts.message || "";
+    $("#modalOk").textContent = opts.okText || "Confirm";
+    $("#modalOk").className = "btn" + (opts.danger ? " danger" : "");
+    $("#modalIcon").innerHTML = opts.icon || "";
+    modalBack.classList.add("show");
+    $("#modalOk").focus();
+    return new Promise(function (resolve) {
+      function done(val) {
+        modalBack.classList.remove("show");
+        $("#modalOk").removeEventListener("click", onOk);
+        $("#modalCancel").removeEventListener("click", onCancel);
+        modalBack.removeEventListener("mousedown", onBack);
+        document.removeEventListener("keydown", onKey);
+        resolve(val);
+      }
+      function onOk() { done(true); }
+      function onCancel() { done(false); }
+      function onBack(e) { if (e.target === modalBack) done(false); }
+      function onKey(e) { if (e.key === "Escape") done(false); else if (e.key === "Enter") done(true); }
+      $("#modalOk").addEventListener("click", onOk);
+      $("#modalCancel").addEventListener("click", onCancel);
+      modalBack.addEventListener("mousedown", onBack);
+      document.addEventListener("keydown", onKey);
+    });
+  }
+
+  // ---------- api wrapper ----------
+  async function api(path, opts) {
+    opts = opts || {};
+    var headers = Object.assign({ "x-dashboard-password": pw() }, opts.headers || {});
+    if (opts.body) headers["Content-Type"] = "application/json";
+    var res = await fetch(API + path, { method: opts.method || "GET", headers: headers, body: opts.body ? JSON.stringify(opts.body) : undefined });
+    if (res.status === 401) { logout(); throw new Error("Session expired — please log in again."); }
+    var json = await res.json().catch(function () { return {}; });
+    if (!res.ok || json.ok === false) throw new Error(json.error || ("Request failed (" + res.status + ")"));
+    return json;
+  }
+
+  // ---------- auth ----------
+  var gate = $("#gate"), app = $("#app");
+  function showApp() { gate.style.display = "none"; app.classList.add("show"); }
+  function showGate() { app.classList.remove("show"); gate.style.display = "grid"; }
+  function logout() { sessionStorage.removeItem(KEY); showGate(); }
+
+  $("#loginForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var btn = $("#loginBtn"), errEl = $("#loginErr");
+    var val = $("#pw").value;
+    errEl.textContent = "";
+    btn.disabled = true; btn.textContent = "Checking…";
+    try {
+      var res = await fetch(API + "/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: val }) });
+      var json = await res.json().catch(function () { return {}; });
+      if (!res.ok || !json.ok) throw new Error(json.error || "Incorrect password.");
+      sessionStorage.setItem(KEY, val);
+      showApp();
+      go("overview");
+    } catch (err) {
+      errEl.textContent = err.message;
+      $("#pw").focus();
+    } finally {
+      btn.disabled = false; btn.textContent = "Access Dashboard";
+    }
+  });
+  $("#logoutBtn").addEventListener("click", async function () {
+    var ok = await showConfirm({
+      title: "Log out?",
+      message: "You'll need the dashboard password to sign back in.",
+      okText: "Log out",
+      danger: true,
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg>',
+    });
+    if (ok) logout();
+  });
+
+  // ---------- navigation ----------
+  var loaders = {};
+  function go(view) {
+    $all(".nav-item[data-view]").forEach(function (b) { b.classList.toggle("active", b.dataset.view === view); });
+    $all(".view").forEach(function (v) { v.classList.remove("active"); });
+    var el = $("#view-" + view);
+    if (el) el.classList.add("active");
+    if (loaders[view]) loaders[view]();
+  }
+  $("#nav").addEventListener("click", function (e) {
+    var btn = e.target.closest(".nav-item[data-view]");
+    if (btn) go(btn.dataset.view);
+  });
+  document.addEventListener("click", function (e) {
+    var g = e.target.closest("[data-go]"); if (g) go(g.dataset.go);
+  });
+  $all("[data-refresh]").forEach(function (b) {
+    b.addEventListener("click", function () { var v = b.dataset.refresh; if (loaders[v]) loaders[v](); });
+  });
+
+  function rowsMsg(colspan, msg, loading) {
+    return '<tr><td colspan="' + colspan + '"><div class="empty">' +
+      (loading ? '<svg class="spin" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e6b979" stroke-width="2.4" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg>'
+               : '<div class="big">' + esc(msg) + '</div>') + '</div></td></tr>';
+  }
+
+  // ---------- OVERVIEW ----------
+  function countUp(el, target) {
+    var start = 0, dur = 850, t0 = null;
+    function step(ts) {
+      if (!t0) t0 = ts;
+      var p = Math.min((ts - t0) / dur, 1);
+      var eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(start + (target - start) * eased);
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  loaders.overview = async function () {
+    try {
+      var r = await api("/overview");
+      var s = r.stats;
+      Object.keys(s).forEach(function (k) {
+        var el = $('[data-stat="' + k + '"]');
+        if (el) countUp(el, s[k] || 0);
+      });
+      // newsletter health
+      var subs = s.subscribers || 0, unsub = s.unsubscribed || 0, denom = subs + unsub;
+      var rate = denom ? Math.round((subs / denom) * 100) : 0;
+      $("#subRate").textContent = rate + "%";
+      setTimeout(function () { $("#subBar").style.width = rate + "%"; }, 100);
+      $("#legSub").textContent = "Subscribed · " + subs;
+      $("#legUnsub").textContent = "Unsubscribed · " + unsub;
+    } catch (e) { toast(e.message, true); }
+    // recent submissions
+    try {
+      var sub = await api("/submissions");
+      var list = $("#recentList");
+      if (!sub.rows.length) { list.innerHTML = '<div class="empty"><div class="big">No submissions yet</div></div>'; return; }
+      list.innerHTML = sub.rows.slice(0, 6).map(function (x) {
+        return "<div class='item'><div class='av'>" + esc(initials(x.name)) + "</div>" +
+          "<div class='meta'><div class='nm'>" + esc(x.name) + "</div><div class='em'>" + esc(x.email) + "</div></div>" +
+          (x.newsletter_subscribed ? "<span class='badge gold'>Subscribed</span>" : "<span class='badge off'>Not subscribed</span>") +
+          "<span class='when'>" + fmtDate(x.created_at) + "</span></div>";
+      }).join("");
+    } catch (e) { /* overview already toasted */ }
+  };
+
+  // ---------- SUBMISSIONS ----------
+  loaders.submissions = async function () {
+    var body = $("#submissionsBody");
+    body.innerHTML = rowsMsg(6, "", true);
+    try {
+      var r = await api("/submissions");
+      $("#subsCount").textContent = r.rows.length + " total";
+      if (!r.rows.length) { body.innerHTML = rowsMsg(6, "No submissions yet"); return; }
+      body.innerHTML = r.rows.map(function (x) {
+        return "<tr><td><div class='who'><div class='av'>" + esc(initials(x.name)) + "</div><span class='nm'>" + esc(x.name) + "</span></div></td>" +
+          "<td class='em'>" + esc(x.email) + "</td>" +
+          "<td class='msg'>" + esc(x.message) + "</td>" +
+          "<td>" + (x.newsletter_subscribed ? "<span class='badge gold'>Subscribed</span>" : "<span class='badge off'>—</span>") + "</td>" +
+          "<td>" + (x.replied ? "<span class='badge on'>Replied</span>" : "<span class='badge off'>No</span>") + "</td>" +
+          "<td class='when'>" + fmtDate(x.created_at) + "</td></tr>";
+      }).join("");
+    } catch (e) { body.innerHTML = rowsMsg(6, e.message); }
+  };
+
+  // ---------- SUBSCRIBERS ----------
+  loaders.subscribers = async function () {
+    var body = $("#subscribersBody");
+    body.innerHTML = rowsMsg(4, "", true);
+    try {
+      var r = await api("/subscribers");
+      $("#subrCount").textContent = r.rows.length + " active";
+      if (!r.rows.length) { body.innerHTML = rowsMsg(4, "No subscribers yet"); return; }
+      body.innerHTML = r.rows.map(function (x) {
+        return "<tr data-id='" + esc(x.id) + "'><td><div class='who'><div class='av'>" + esc(initials(x.name)) + "</div><span class='nm'>" + esc(x.name) + "</span></div></td>" +
+          "<td class='em'>" + esc(x.email) + "</td>" +
+          "<td class='when'>" + fmtDate(x.subscribed_at || x.created_at) + "</td>" +
+          "<td style='text-align:right'><button class='btn danger sm' data-unsub='" + esc(x.id) + "'>Unsubscribe</button></td></tr>";
+      }).join("");
+    } catch (e) { body.innerHTML = rowsMsg(4, e.message); }
+  };
+  $("#subscribersBody").addEventListener("click", async function (e) {
+    var btn = e.target.closest("[data-unsub]");
+    if (!btn) return;
+    btn.disabled = true; btn.textContent = "…";
+    try {
+      await api("/unsubscribe", { method: "POST", body: { id: btn.dataset.unsub } });
+      toast("Unsubscribed");
+      loaders.subscribers();
+    } catch (err) { toast(err.message, true); btn.disabled = false; btn.textContent = "Unsubscribe"; }
+  });
+
+  // ---------- EMAIL LOG ----------
+  loaders.emails = async function () {
+    var body = $("#emailsBody");
+    body.innerHTML = rowsMsg(4, "", true);
+    try {
+      var r = await api("/email-events");
+      $("#emailCount").textContent = r.rows.length + " sent";
+      if (!r.rows.length) { body.innerHTML = rowsMsg(4, "No emails sent yet"); return; }
+      body.innerHTML = r.rows.map(function (x) {
+        var kindClass = x.kind === "welcome" ? "gold" : "on";
+        return "<tr><td class='em'>" + esc(x.email) + "</td>" +
+          "<td><span class='badge " + kindClass + "'>" + esc(x.kind || "—") + "</span></td>" +
+          "<td>" + esc(x.subject || "—") + "</td>" +
+          "<td class='when'>" + fmtDate(x.created_at) + "</td></tr>";
+      }).join("");
+    } catch (e) { body.innerHTML = rowsMsg(4, e.message); }
+  };
+
+  // ---------- NEWSLETTER EDITOR ----------
+  var editor = $("#editor"), editingId = null;
+  $("#toolbar").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    editor.focus();
+    if (b.dataset.cmd) document.execCommand(b.dataset.cmd, false, null);
+    else if (b.dataset.block) document.execCommand("formatBlock", false, b.dataset.block);
+    else if (b.hasAttribute("data-link")) {
+      var url = prompt("Link URL:", "https://");
+      if (url) document.execCommand("createLink", false, url);
+    }
+  });
+  function resetEditor() {
+    editingId = null; $("#nlSubject").value = ""; editor.innerHTML = "";
+    $("#composeTitle").textContent = "New Newsletter";
+    $("#editingTag").textContent = "";
+    $("#saveNlBtn").textContent = "Save draft";
+  }
+  $("#clearNlBtn").addEventListener("click", resetEditor);
+  $("#saveNlBtn").addEventListener("click", async function () {
+    var subject = $("#nlSubject").value.trim();
+    var body_html = editor.innerHTML.trim();
+    if (!subject && !body_html) { toast("Add a subject or some content first", true); return; }
+    var btn = $("#saveNlBtn"); btn.disabled = true; btn.textContent = "Saving…";
+    try {
+      if (editingId) await api("/newsletters/" + editingId, { method: "PUT", body: { subject: subject, body_html: body_html } });
+      else await api("/newsletters", { method: "POST", body: { subject: subject, body_html: body_html } });
+      toast(editingId ? "Draft updated" : "Draft saved");
+      resetEditor();
+      go("savedNewsletters");
+    } catch (err) { toast(err.message, true); }
+    finally { btn.disabled = false; btn.textContent = editingId ? "Update draft" : "Save draft"; }
+  });
+
+  // ---------- SAVED NEWSLETTERS ----------
+  var nlCache = [];
+  loaders.savedNewsletters = async function () {
+    var body = $("#newslettersBody");
+    body.innerHTML = '<div class="empty"><svg class="spin" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e6b979" stroke-width="2.4" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg></div>';
+    try {
+      var r = await api("/newsletters");
+      nlCache = r.rows;
+      $("#nlCount").textContent = r.rows.length + " saved";
+      if (!r.rows.length) { body.innerHTML = '<div class="empty"><div class="big">No saved newsletters</div>Write one in the New Newsletter tab.</div>'; return; }
+      body.innerHTML = r.rows.map(function (x) {
+        var preview = (x.body_html || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+        return "<div class='saved-card'><div style='min-width:0'><h4>" + esc(x.subject || "(no subject)") + "</h4>" +
+          "<div class='preview'>" + esc(preview.slice(0, 160)) + "</div>" +
+          "<div class='when' style='margin-top:8px'>Updated " + fmtDate(x.updated_at) + "</div></div>" +
+          "<div class='saved-actions'><button class='btn ghost sm' data-edit='" + esc(x.id) + "'>Edit</button>" +
+          "<button class='btn danger sm' data-del='" + esc(x.id) + "'>Delete</button></div></div>";
+      }).join("");
+    } catch (e) { body.innerHTML = '<div class="empty"><div class="big">' + esc(e.message) + '</div></div>'; }
+  };
+  $("#newslettersBody").addEventListener("click", async function (e) {
+    var edit = e.target.closest("[data-edit]"), del = e.target.closest("[data-del]");
+    if (edit) {
+      var row = nlCache.filter(function (n) { return n.id === edit.dataset.edit; })[0];
+      if (!row) return;
+      editingId = row.id;
+      $("#nlSubject").value = row.subject || "";
+      editor.innerHTML = row.body_html || "";
+      $("#composeTitle").textContent = "Edit Newsletter";
+      $("#editingTag").textContent = "Editing saved draft";
+      $("#saveNlBtn").textContent = "Update draft";
+      go("newNewsletter");
+    } else if (del) {
+      var ok = await showConfirm({
+        title: "Delete draft?",
+        message: "This newsletter draft will be permanently removed.",
+        okText: "Delete",
+        danger: true,
+        icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M6 7l1 13h10l1-13"/></svg>',
+      });
+      if (!ok) return;
+      try { await api("/newsletters/" + del.dataset.del, { method: "DELETE" }); toast("Draft deleted"); loaders.savedNewsletters(); }
+      catch (err) { toast(err.message, true); }
+    }
+  });
+
+  // ---------- boot ----------
+  (async function boot() {
+    if (!pw()) { showGate(); return; }
+    try { await api("/overview"); showApp(); go("overview"); }
+    catch (e) { logout(); }
+  })();
+})();
+</script>
+</body>
+</html>

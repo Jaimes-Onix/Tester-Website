@@ -25,135 +25,262 @@
       --font:"Montserrat",sans-serif;
     }
     *{ box-sizing:border-box; margin:0; padding:0; }
-    html,body{ height:100%; }
+    html,body{ min-height:100%; }
     body{
       font-family:var(--font); font-weight:500; color:var(--text);
       background:
-        radial-gradient(820px 520px at 50% -8%, rgba(230,185,121,.12), transparent 62%),
-        radial-gradient(700px 600px at 88% 14%, rgba(198,165,89,.07), transparent 60%),
-        linear-gradient(180deg,#0A0A0A,#070707);
+        radial-gradient(1100px 640px at 50% -12%, rgba(230,185,121,.14), transparent 60%),
+        radial-gradient(820px 700px at 90% 8%, rgba(198,165,89,.08), transparent 60%),
+        radial-gradient(720px 620px at 4% 96%, rgba(247,232,194,.05), transparent 58%),
+        linear-gradient(180deg,#0A0A0A,#060606);
       -webkit-font-smoothing:antialiased;
-      display:grid; place-items:center; min-height:100svh; padding:28px;
-      overflow:hidden; position:relative;
+      display:grid; place-items:center; min-height:100svh; padding:clamp(16px,4vw,48px);
+      position:relative; overflow:hidden;
     }
     a{ color:inherit; text-decoration:none; }
     ::selection{ background:rgba(230,185,121,.3); color:#fff; }
-    :focus-visible{ outline:2px solid var(--gold-300); outline-offset:3px; border-radius:8px; }
+    :focus-visible{ outline:2px solid var(--gold-300); outline-offset:3px; border-radius:10px; }
 
-    /* faint dot texture */
+    /* faint dot texture + grain for depth */
     body::before{
       content:""; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.5;
       background-image:radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px);
-      background-size:26px 26px;
-      -webkit-mask-image:radial-gradient(circle at 50% 40%, #000, transparent 78%);
-              mask-image:radial-gradient(circle at 50% 40%, #000, transparent 78%);
+      background-size:28px 28px;
+      -webkit-mask-image:radial-gradient(circle at 50% 38%, #000, transparent 80%);
+              mask-image:radial-gradient(circle at 50% 38%, #000, transparent 80%);
+    }
+    body::after{
+      content:""; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.04;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
+    /* ── Card: wide two-column shell ───────────────────────────── */
     .card{
-      position:relative; z-index:1; width:min(540px,100%); text-align:center;
-      padding:48px 36px 40px;
-      border:1px solid var(--line); border-radius:28px;
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0) 38%), linear-gradient(180deg,#131313,#0B0B0B);
-      box-shadow:0 40px 90px -50px rgba(230,185,121,.4), 0 10px 40px rgba(0,0,0,.5);
-      animation:rise .7s var(--ease) both;
+      position:relative; z-index:1; width:min(1040px,100%);
+      border:1px solid var(--line); border-radius:30px; overflow:hidden;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,0) 30%),
+        linear-gradient(180deg,#141414,#0B0B0B);
+      box-shadow:
+        0 60px 130px -60px rgba(230,185,121,.42),
+        0 24px 70px -30px rgba(0,0,0,.7),
+        inset 0 1px 0 rgba(255,255,255,.05);
+      display:grid; grid-template-columns:1.12fr .88fr;
+      animation:rise .8s var(--ease) both;
     }
-    @keyframes rise{ from{ opacity:0; transform:translateY(18px) scale(.985); } to{ opacity:1; transform:none; } }
+    /* hairline gold edge along the very top */
+    .card::before{
+      content:""; position:absolute; inset:0 0 auto 0; height:1px;
+      background:linear-gradient(90deg, transparent, rgba(242,221,168,.55), transparent);
+    }
+    @keyframes rise{ from{ opacity:0; transform:translateY(22px) scale(.985); } to{ opacity:1; transform:none; } }
 
-    .brand{ display:inline-flex; align-items:center; gap:9px; font-weight:800; font-size:1rem; letter-spacing:-.01em; margin-bottom:30px; }
-    .brand img{ width:26px; height:26px; }
+    .pane{ padding:clamp(30px,3.6vw,56px); }
+
+    /* ── Left / main pane ──────────────────────────────────────── */
+    .main{ display:flex; flex-direction:column; }
+    .brand{ display:inline-flex; align-items:center; gap:10px; font-weight:800; font-size:1.02rem; letter-spacing:-.01em; }
+    .brand img{ width:28px; height:28px; }
     .brand .io{ background:var(--grad-gold); -webkit-background-clip:text; background-clip:text; color:transparent; }
 
-    /* checkmark inside a depleting countdown ring */
-    .ring{ position:relative; width:118px; height:118px; margin:0 auto 26px; }
-    .ring svg{ width:100%; height:100%; transform:rotate(-90deg); }
+    .eyebrow{
+      align-self:flex-start; margin-top:clamp(28px,4vw,46px);
+      display:inline-flex; align-items:center; gap:9px;
+      font-size:12px; font-weight:700; letter-spacing:.02em; color:var(--gold-200);
+      border:1px solid rgba(242,221,168,.22); background:rgba(230,185,121,.07);
+      padding:8px 15px; border-radius:99px;
+    }
+    .eyebrow svg{ display:block; }
+
+    h1{
+      margin-top:22px; font-size:clamp(38px,5.4vw,60px); font-weight:800;
+      letter-spacing:-.035em; line-height:.98;
+    }
+    h1 .g{ background:var(--grad-gold); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    p.lead{
+      margin-top:20px; color:#b9b8b4; font-size:clamp(15px,1.4vw,17px); line-height:1.72;
+      max-width:42ch; font-weight:500;
+    }
+
+    .actions{ margin-top:auto; padding-top:34px; display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+    .btn{
+      display:inline-flex; align-items:center; gap:10px;
+      font-weight:800; font-size:14.5px; color:#1A1308; letter-spacing:-.01em;
+      background:var(--grad-gold); padding:15px 28px; border-radius:99px;
+      box-shadow:0 1px 0 rgba(255,255,255,.55) inset, 0 18px 38px -16px rgba(230,185,121,.65);
+      transition:transform .35s var(--ease), filter .35s var(--ease), box-shadow .35s var(--ease);
+    }
+    .btn:hover{ transform:translateY(-2px); filter:brightness(1.04); box-shadow:0 1px 0 rgba(255,255,255,.55) inset, 0 24px 46px -16px rgba(230,185,121,.75); }
+    .btn:active{ transform:translateY(0) scale(.985); }
+    .btn svg{ transition:transform .35s var(--ease); }
+    .btn:hover svg{ transform:translateX(4px); }
+
+    .count{
+      display:inline-flex; align-items:center; gap:10px;
+      font-size:13px; font-weight:600; color:var(--mute);
+    }
+    .count .dot{ width:7px; height:7px; border-radius:50%; background:var(--gold-300); box-shadow:0 0 10px var(--gold-300); animation:blink 1s steps(2) infinite; }
+    .count b{ color:var(--gold-200); font-weight:800; font-variant-numeric:tabular-nums; }
+    @keyframes blink{ 50%{ opacity:.3; } }
+
+    /* ── Right / aside pane ────────────────────────────────────── */
+    .aside{
+      position:relative;
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+      border-left:1px solid var(--line);
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:30px;
+    }
+    /* depleting countdown ring with check */
+    .ring{ position:relative; width:138px; height:138px; }
+    .ring > svg{ width:100%; height:100%; transform:rotate(-90deg); }
     .ring .track{ stroke:rgba(255,255,255,.08); }
     .ring .prog{
       stroke:url(#g); stroke-linecap:round;
-      stroke-dasharray:326.7; stroke-dashoffset:0;
-      filter:drop-shadow(0 0 6px rgba(230,185,121,.45));
+      stroke-dasharray:364.4; stroke-dashoffset:0;
+      filter:drop-shadow(0 0 7px rgba(230,185,121,.5));
       animation:deplete 5s linear forwards;
     }
-    @keyframes deplete{ to{ stroke-dashoffset:326.7; } }
-    .ring .check{
-      position:absolute; inset:0; display:grid; place-items:center;
-    }
+    @keyframes deplete{ to{ stroke-dashoffset:364.4; } }
+    .ring .check{ position:absolute; inset:0; display:grid; place-items:center; }
     .ring .check span{
-      width:60px; height:60px; border-radius:50%; display:grid; place-items:center;
-      background:var(--grad-gold); box-shadow:0 0 26px -4px rgba(230,185,121,.6);
-      animation:pop .55s var(--ease) .15s both;
+      width:72px; height:72px; border-radius:50%; display:grid; place-items:center;
+      background:var(--grad-gold); box-shadow:0 0 30px -4px rgba(230,185,121,.65);
+      animation:pop .6s var(--ease) .18s both;
     }
     @keyframes pop{ 0%{ transform:scale(0); } 70%{ transform:scale(1.12); } 100%{ transform:scale(1); } }
 
-    h1{ font-size:clamp(28px,6vw,38px); font-weight:800; letter-spacing:-.03em; line-height:1.04; }
-    h1 .g{ background:var(--grad-gold); -webkit-background-clip:text; background-clip:text; color:transparent; }
-    p.lead{ margin-top:14px; color:var(--mute); font-size:15px; line-height:1.7; max-width:38ch; margin-inline:auto; }
-
-    .count{
-      margin-top:26px; display:inline-flex; align-items:center; gap:9px;
-      font-size:12.5px; font-weight:600; color:var(--mute);
-      border:1px solid var(--line); background:rgba(255,255,255,.03);
-      padding:9px 16px; border-radius:99px;
+    .next{ width:100%; max-width:330px; }
+    .next-label{
+      display:block; font-size:11px; font-weight:700; letter-spacing:.18em; text-transform:uppercase;
+      color:var(--mute); margin-bottom:16px; text-align:center;
     }
-    .count b{ color:var(--gold-200); font-weight:800; font-variant-numeric:tabular-nums; }
-    .dot{ width:7px; height:7px; border-radius:50%; background:var(--gold-300); box-shadow:0 0 10px var(--gold-300); animation:blink 1s steps(2) infinite; }
-    @keyframes blink{ 50%{ opacity:.3; } }
-
-    .btn{
-      margin-top:28px; display:inline-flex; align-items:center; gap:9px;
-      font-weight:700; font-size:13.5px; color:#1A1308;
-      background:var(--grad-gold); padding:13px 26px; border-radius:99px;
-      box-shadow:0 1px 0 rgba(255,255,255,.5) inset, 0 14px 32px -14px rgba(230,185,121,.6);
-      transition:transform .35s var(--ease), filter .35s var(--ease);
+    .next-list{ list-style:none; display:flex; flex-direction:column; gap:11px; }
+    .next-list li{
+      display:flex; align-items:center; gap:13px;
+      padding:13px 15px; border:1px solid var(--line); border-radius:15px;
+      background:rgba(255,255,255,.02);
+      transition:border-color .3s var(--ease), background .3s var(--ease), transform .3s var(--ease);
     }
-    .btn:hover{ transform:translateY(-2px); filter:brightness(1.05); }
-    .btn:active{ transform:translateY(0) scale(.985); }
-    .btn svg{ transition:transform .35s var(--ease); }
-    .btn:hover svg{ transform:translateX(3px); }
+    .next-list li:hover{ border-color:rgba(242,221,168,.28); background:rgba(230,185,121,.05); transform:translateY(-1px); }
+    .ico{
+      flex:none; width:38px; height:38px; border-radius:11px; display:grid; place-items:center;
+      background:linear-gradient(150deg, rgba(242,221,168,.16), rgba(198,165,89,.08));
+      border:1px solid rgba(242,221,168,.2);
+    }
+    .next-list .t{ font-size:13.5px; font-weight:700; color:var(--text); letter-spacing:-.01em; }
+    .next-list .s{ font-size:12px; font-weight:500; color:var(--mute); margin-top:2px; line-height:1.45; }
+
+    /* staggered entrance for left-pane items */
+    .reveal{ opacity:0; transform:translateY(12px); animation:revealUp .7s var(--ease) forwards; }
+    .reveal.d1{ animation-delay:.12s } .reveal.d2{ animation-delay:.2s } .reveal.d3{ animation-delay:.28s }
+    .reveal.d4{ animation-delay:.36s } .reveal.d5{ animation-delay:.46s }
+    @keyframes revealUp{ to{ opacity:1; transform:none; } }
+
+    /* ── Responsive: stack on narrow screens ───────────────────── */
+    @media (max-width: 880px){
+      .card{ grid-template-columns:1fr; }
+      .aside{ border-left:none; border-top:1px solid var(--line); order:2; }
+      .main{ order:1; }
+      .actions{ margin-top:30px; }
+      h1{ font-size:clamp(34px,9vw,46px); }
+      p.lead{ max-width:none; }
+    }
+    @media (max-width: 460px){
+      .next-list li{ padding:11px 13px; }
+    }
 
     @media (prefers-reduced-motion: reduce){
       *{ animation:none !important; }
+      .reveal{ opacity:1; transform:none; }
     }
   </style>
 </head>
 <body>
   <main class="card" role="status" aria-live="polite">
-    <a class="brand" href="/" aria-label="Tester.io home">
-      <img src="/tester-logo.png" alt="" />
-      <span>Tester<span class="io">.io</span></span>
-    </a>
+    <!-- ── Left: the message ─────────────────────────── -->
+    <section class="pane main">
+      <a class="brand reveal" href="/" aria-label="Tester.io home">
+        <img src="/tester-logo.png" alt="" />
+        <span>Tester<span class="io">.io</span></span>
+      </a>
 
-    <div class="ring" aria-hidden="true">
-      <svg viewBox="0 0 120 120">
-        <defs>
-          <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#F2DDA8" />
-            <stop offset="1" stop-color="#C6A559" />
-          </linearGradient>
-        </defs>
-        <circle class="track" cx="60" cy="60" r="52" fill="none" stroke-width="6" />
-        <circle class="prog"  cx="60" cy="60" r="52" fill="none" stroke-width="6" />
-      </svg>
-      <div class="check">
-        <span>
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#1A1308" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-11" /></svg>
+      <span class="eyebrow reveal d1">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F2DDA8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-11" /></svg>
+        Message received
+      </span>
+
+      <h1 class="reveal d2">You're <span class="g">on the&nbsp;list</span></h1>
+
+      <p class="lead reveal d3">
+        Thanks for reaching out — your details are saved and someone from the
+        team will be in touch shortly. We're glad you're here.
+      </p>
+
+      <div class="actions reveal d4">
+        <a class="btn" href="/product.html">
+          Explore the product
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </a>
+        <span class="count">
+          <span class="dot"></span>
+          Auto-redirecting in <b id="secs">5</b>s
         </span>
       </div>
-    </div>
+    </section>
 
-    <h1>You're <span class="g">on the list</span></h1>
-    <p class="lead">Thanks for reaching out — we've saved your details and someone from the team will be in touch shortly.</p>
+    <!-- ── Right: visual + what's next ───────────────── -->
+    <aside class="pane aside">
+      <div class="ring reveal d2" aria-hidden="true">
+        <svg viewBox="0 0 132 132">
+          <defs>
+            <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#F2DDA8" />
+              <stop offset="1" stop-color="#C6A559" />
+            </linearGradient>
+          </defs>
+          <circle class="track" cx="66" cy="66" r="58" fill="none" stroke-width="6" />
+          <circle class="prog"  cx="66" cy="66" r="58" fill="none" stroke-width="6" />
+        </svg>
+        <div class="check">
+          <span>
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#1A1308" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-11" /></svg>
+          </span>
+        </div>
+      </div>
 
-    <div class="count">
-      <span class="dot"></span>
-      Taking you to the product in <b id="secs">5</b>s…
-    </div>
-
-    <div>
-      <a class="btn" href="/product.html">
-        Go now
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-      </a>
-    </div>
+      <div class="next reveal d4">
+        <span class="next-label">While you wait</span>
+        <ul class="next-list">
+          <li>
+            <span class="ico" aria-hidden="true">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F2DDA8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.3 8 9 4.6-.7 8-4 8-9V5l-8-3Z" /><path d="m9 12 2 2 4-4" /></svg>
+            </span>
+            <div>
+              <div class="t">Saved securely</div>
+              <div class="s">Your message is safely in our system.</div>
+            </div>
+          </li>
+          <li>
+            <span class="ico" aria-hidden="true">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F2DDA8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4L4 21l1.1-4A8.4 8.4 0 1 1 21 11.5Z" /></svg>
+            </span>
+            <div>
+              <div class="t">A human will reply</div>
+              <div class="s">Expect a response within one business day.</div>
+            </div>
+          </li>
+          <li>
+            <span class="ico" aria-hidden="true">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F2DDA8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m13 2-9 11h7l-1 9 9-11h-7l1-9Z" /></svg>
+            </span>
+            <div>
+              <div class="t">Early access incoming</div>
+              <div class="s">You're in line for the Tester Pro Terminal.</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </aside>
   </main>
 
   <script>
