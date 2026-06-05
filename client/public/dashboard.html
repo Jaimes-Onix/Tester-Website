@@ -450,7 +450,7 @@
   // path relative so the Vite dev proxy forwards /api to the local Express server.
   // Replace <BACKEND_URL> below with the deployed backend origin after it goes live
   // (e.g. https://tester-api.vercel.app — no trailing slash).
-  var API_BASE = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? "" : "https://<BACKEND_URL>";
+  var API_BASE = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? "" : "https://tester-website-snowy.vercel.app";
   var API = API_BASE + "/api/admin";
   var KEY = "tester_dash_pw";
 
