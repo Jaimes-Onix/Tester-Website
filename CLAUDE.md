@@ -1,10 +1,15 @@
 # CLAUDE.md — Frontend Website Rules
 
+## Repo Layout (monorepo, two deployments)
+- **`client/`** — the React/Vite frontend (all UI, static pages, screenshot + image-gen tooling). Run frontend commands from here.
+- **`server/`** — the Express API backend (`server.js`, `api/`, backend scripts). Deployed separately.
+- Each folder has its own `package.json` and `.env.local`. All paths below are relative to `client/` unless noted.
+
 ## Always Do First
 - **Invoke the `frontend-design` skill** before writing any frontend code, every session, no exceptions.
 
 ## Project Skills
-- **`/tester-tech-page`** — recreates the Tester Tech smart-gadgets showcase at `public/TesterTech.html`, generating product images via Nano Banana/kie.ai (`scripts/generate-images.mjs`). Triggers: "recreate/rebuild/refresh the Tester Tech page". Won't auto-run (has side effects + API cost). Optional argument: a design tweak. Output: `public/TesterTech.html` + `public/generated/tester-*.png`.
+- **`/tester-tech-page`** — recreates the Tester Tech smart-gadgets showcase at `client/public/TesterTech.html`, generating product images via Nano Banana/kie.ai (`client/scripts/generate-images.mjs`). Triggers: "recreate/rebuild/refresh the Tester Tech page". Won't auto-run (has side effects + API cost). Optional argument: a design tweak. Output: `client/public/TesterTech.html` + `client/public/generated/tester-*.png`.
 
 ## Reference Images
 - If a reference image is provided: match layout, spacing, typography, and color exactly. Swap in placeholder content (images via `https://placehold.co/`, generic copy). Do not improve or add to the design.
@@ -14,23 +19,24 @@
 
 ## Local Server (React + Vite)
 - **Always serve on localhost** — never screenshot a `file:///` URL.
-- Dev server: `npm run dev` (Vite, `http://localhost:3000`). Production check: `npm run build` then `npm run preview` (also `:3000`).
+- Run from `client/`. Dev server: `npm run dev` (Vite, `http://localhost:3000`). Production check: `npm run build` then `npm run preview` (also `:3000`).
+- The frontend's `/api/*` calls are proxied to the backend at `localhost:5000` in dev — start the backend too: `cd server && npm start`.
 - Start it in the background before screenshots. If a server is already on `:3000`, reuse it — do not start a second instance (stop the stale one first if it's the old static `serve.mjs`).
 - `serve.mjs` is legacy (static file server) and is NOT used for the React app — Vite handles dev/preview.
 
 ## Screenshot Workflow
-- Puppeteer + Chrome headless-shell are installed locally in this project (`node_modules`, `~/.cache/puppeteer`). `screenshot.mjs` lives in the project root — use it as-is.
+- Puppeteer + Chrome headless-shell are installed locally in the `client/` project (`client/node_modules`, `~/.cache/puppeteer`). `client/screenshot.mjs` lives there — run it from `client/`.
 - **Always screenshot from localhost:** `node screenshot.mjs http://localhost:3000 [label] [width] [height]`
-- Screenshots save to `./temporary screenshots/screenshot-N[-label].png` (auto-incremented, never overwritten).
+- Screenshots save to `client/temporary screenshots/screenshot-N[-label].png` (auto-incremented, never overwritten).
 - **Live mode (default):** the script waits for the 5s intro overlay to finish, then auto-scrolls to trigger scroll-reveals, then captures full-page. Use this to see the real, animated site.
 - **Static mode (`SHOT_STATIC=1 node screenshot.mjs ...`):** emulates `prefers-reduced-motion`, disabling the intro, 3D hero, marquee, and reveals — a deterministic capture **for reference comparison / visual diffs.**
 - After screenshotting, read the PNG with the Read tool. Keep capture width ≤ 1000px (deviceScaleFactor doubles it) when you need to read fine detail; mobile (390) and narrow widths are easiest to inspect.
 - When comparing, be specific: "heading is 32px but reference shows ~24px", "card gap is 16px but should be 24px". Check: spacing/padding, font size/weight/line-height, colors (exact hex), alignment, border-radius, shadows, image sizing. **Skip dynamic-animation regions (see Reference Images).**
 
 ## Output Defaults (current stack)
-- **React 18 + TypeScript + Vite + Tailwind CSS (PostCSS).** Entry: `index.html` → `src/main.tsx` → `src/App.tsx`. Global/custom CSS in `src/index.css`; Tailwind theme in `tailwind.config.js`.
-- Components live in `src/components/`; imperative motion (GSAP + Three.js) lives in the `useSiteEffects()` hook in `src/lib/effects.ts`. GSAP/Three are npm deps (not CDN).
-- Build to static `dist/` via `npm run build` — deploy `dist/` to any static host (Vercel/Netlify auto-detect Vite).
+- **React 18 + TypeScript + Vite + Tailwind CSS (PostCSS).** Entry: `client/index.html` → `client/src/main.tsx` → `client/src/App.tsx`. Global/custom CSS in `client/src/index.css`; Tailwind theme in `client/tailwind.config.js`.
+- Components live in `client/src/components/`; imperative motion (GSAP + Three.js) lives in the `useSiteEffects()` hook in `client/src/lib/effects.ts`. GSAP/Three are npm deps (not CDN).
+- Build to static `client/dist/` via `npm run build` (from `client/`) — deploy `client/dist/` to any static host (Vercel/Netlify auto-detect Vite).
 - Placeholder images: `https://placehold.co/WIDTHxHEIGHT`; real photos via Unsplash with an onerror fallback. Mobile-first responsive.
 
 ## Brand Assets

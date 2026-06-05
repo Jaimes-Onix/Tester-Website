@@ -21,7 +21,7 @@ import { createClient } from "@supabase/supabase-js";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { randomUUID, timingSafeEqual } from "node:crypto";
+import { timingSafeEqual } from "node:crypto";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -70,7 +70,9 @@ const resend = resendConfigured ? new Resend(RESEND_API_KEY) : null;
  * Supabase admin client (service_role) — backend only. Used to LOG email
  * interactions into email_events so everything stays organized (Step 8).
  * ------------------------------------------------------------------ */
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
+// Accept SUPABASE_URL (preferred for a standalone backend) and fall back to the
+// VITE_-prefixed name for backward compatibility with the old single-folder setup.
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabaseAdmin =
   SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY
@@ -147,7 +149,12 @@ async function appendRow({ name, email, message }) {
  * App
  * ------------------------------------------------------------------ */
 const app = express();
-app.use(cors());
+// The frontend now lives on a SEPARATE origin, so CORS must allow it. By default
+// we reflect any origin (the sensitive routes are still gated by the dashboard
+// password + Supabase service_role). Set CORS_ORIGIN to the frontend URL to lock
+// it down to a single origin in production.
+const CORS_ORIGIN = process.env.CORS_ORIGIN;
+app.use(cors(CORS_ORIGIN ? { origin: CORS_ORIGIN } : {}));
 app.use(express.json({ limit: "16kb" }));
 
 const isEmail = (s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
@@ -274,22 +281,10 @@ app.get("/api/health", (_req, res) => {
  *
  * Data is read with the service_role client (supabaseAdmin), so the
  * browser never needs the anon key and we never open a public read
- * policy. Newsletter drafts are stored in a local JSON file.
+ * policy. Newsletter drafts live in the `newsletters` table (service_role
+ * only — no public RLS policy), so they persist on serverless hosts where
+ * the local filesystem is ephemeral.
  * ================================================================== */
-
-// --- Newsletter draft store: a tiny JSON file (no DB schema change needed) ---
-const newslettersFile = path.join(__dirname, "data", "newsletters.json");
-function readNewsletters() {
-  try {
-    return JSON.parse(fs.readFileSync(newslettersFile, "utf8"));
-  } catch {
-    return [];
-  }
-}
-function writeNewsletters(list) {
-  fs.mkdirSync(path.dirname(newslettersFile), { recursive: true });
-  fs.writeFileSync(newslettersFile, JSON.stringify(list, null, 2));
-}
 
 // POST /api/admin/login — verify the password, nothing more. The dashboard
 // keeps the password client-side and re-sends it on every request.
@@ -386,38 +381,56 @@ app.get("/api/admin/email-events", async (_req, res) => {
   res.json({ ok: true, rows: data });
 });
 
-// --- Newsletter draft CRUD (local JSON store) ---
-app.get("/api/admin/newsletters", (_req, res) => {
-  res.json({ ok: true, rows: readNewsletters() });
+// --- Newsletter draft CRUD (Supabase `newsletters` table, service_role) ---
+app.get("/api/admin/newsletters", async (_req, res) => {
+  if (!ensureSupabase(res)) return;
+  const { data, error } = await supabaseAdmin
+    .from("newsletters")
+    .select("id, subject, body_html, status, created_at, updated_at")
+    .order("created_at", { ascending: false });
+  if (error) return res.status(500).json({ ok: false, error: error.message });
+  res.json({ ok: true, rows: data });
 });
 
-app.post("/api/admin/newsletters", (req, res) => {
+app.post("/api/admin/newsletters", async (req, res) => {
+  if (!ensureSupabase(res)) return;
   const subject = String(req.body?.subject || "").slice(0, 200);
   const body_html = String(req.body?.body_html || "").slice(0, 50000);
-  const now = new Date().toISOString();
-  const list = readNewsletters();
-  const row = { id: randomUUID(), subject, body_html, status: "draft", created_at: now, updated_at: now };
-  list.unshift(row);
-  writeNewsletters(list);
-  res.json({ ok: true, row });
+  const { data, error } = await supabaseAdmin
+    .from("newsletters")
+    .insert({ subject, body_html, status: "draft" })
+    .select("id, subject, body_html, status, created_at, updated_at")
+    .single();
+  if (error) return res.status(500).json({ ok: false, error: error.message });
+  res.json({ ok: true, row: data });
 });
 
-app.put("/api/admin/newsletters/:id", (req, res) => {
-  const list = readNewsletters();
-  const i = list.findIndex((n) => n.id === req.params.id);
-  if (i === -1) return res.status(404).json({ ok: false, error: "Newsletter not found." });
-  if (req.body?.subject !== undefined) list[i].subject = String(req.body.subject).slice(0, 200);
-  if (req.body?.body_html !== undefined) list[i].body_html = String(req.body.body_html).slice(0, 50000);
-  list[i].updated_at = new Date().toISOString();
-  writeNewsletters(list);
-  res.json({ ok: true, row: list[i] });
+app.put("/api/admin/newsletters/:id", async (req, res) => {
+  if (!ensureSupabase(res)) return;
+  const patch = { updated_at: new Date().toISOString() };
+  if (req.body?.subject !== undefined) patch.subject = String(req.body.subject).slice(0, 200);
+  if (req.body?.body_html !== undefined) patch.body_html = String(req.body.body_html).slice(0, 50000);
+  const { data, error } = await supabaseAdmin
+    .from("newsletters")
+    .update(patch)
+    .eq("id", req.params.id)
+    .select("id, subject, body_html, status, created_at, updated_at")
+    .maybeSingle();
+  if (error) return res.status(500).json({ ok: false, error: error.message });
+  if (!data) return res.status(404).json({ ok: false, error: "Newsletter not found." });
+  res.json({ ok: true, row: data });
 });
 
-app.delete("/api/admin/newsletters/:id", (req, res) => {
-  const list = readNewsletters();
-  const next = list.filter((n) => n.id !== req.params.id);
-  if (next.length === list.length) return res.status(404).json({ ok: false, error: "Newsletter not found." });
-  writeNewsletters(next);
+app.delete("/api/admin/newsletters/:id", async (req, res) => {
+  if (!ensureSupabase(res)) return;
+  const { data, error } = await supabaseAdmin
+    .from("newsletters")
+    .delete()
+    .eq("id", req.params.id)
+    .select("id")
+    .maybeSingle();
+  if (error) return res.status(500).json({ ok: false, error: error.message });
+  if (!data) return res.status(404).json({ ok: false, error: "Newsletter not found." });
   res.json({ ok: true });
 });
 
@@ -437,11 +450,20 @@ app.get(/^\/(?!api\/).*/, (_req, res, next) => {
   next();
 });
 
-app.listen(PORT, () => {
-  console.log(`\n  Tester.io API listening on http://localhost:${PORT}`);
-  console.log(
-    sheetsConfigured
-      ? "  Google Sheets: configured ✓  (submissions will be saved)\n"
-      : "  Google Sheets: NOT configured — submissions are logged to the console only.\n  → See docs/google-sheets-setup.md to enable saving.\n"
-  );
-});
+// On Vercel (and other serverless hosts) the platform sets VERCEL=1 and invokes
+// the exported app per-request — there is no port to bind. Locally (`npm start`)
+// VERCEL is unset, so we start a long-running listener as before.
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`\n  Tester.io API listening on http://localhost:${PORT}`);
+    console.log(
+      sheetsConfigured
+        ? "  Google Sheets: configured ✓  (submissions will be saved)\n"
+        : "  Google Sheets: NOT configured — submissions are logged to the console only.\n  → See docs/google-sheets-setup.md to enable saving.\n"
+    );
+  });
+}
+
+// The Express app is itself a valid (req, res) handler, so serverless entry
+// points (api/index.js on Vercel) can import and re-export it directly.
+export default app;

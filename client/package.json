@@ -1,25 +1,20 @@
 {
-  "name": "tester-io",
+  "name": "tester-io-client",
   "private": true,
   "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite --port 3000",
-    "server": "node server.js",
-    "start": "node server.js",
     "build": "vite build",
     "preview": "vite preview --port 3000",
+    "test": "playwright test",
     "generate:images": "node scripts/generate-images.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.107.0",
-    "cors": "^2.8.6",
-    "express": "^5.2.1",
-    "googleapis": "^173.0.0",
     "gsap": "^3.12.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "resend": "^6.12.4",
     "three": "^0.160.1"
   },
   "devDependencies": {

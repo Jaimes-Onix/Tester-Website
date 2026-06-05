@@ -85,7 +85,10 @@ export default function ContactForm() {
     // Best-effort — the email key is server-side only, so we POST to /api/send-welcome.
     // If the backend isn't running, this just fails quietly; the submission is still saved.
     const sendWelcome = async () => {
-      await fetch("/api/send-welcome", {
+      // Backend lives on its own origin in production (VITE_API_BASE_URL). In dev
+      // it's empty, so the call stays relative and the Vite proxy forwards it to :5000.
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+      await fetch(`${API_BASE}/api/send-welcome`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: payload.name, email: payload.email }),
