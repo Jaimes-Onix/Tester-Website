@@ -18,6 +18,7 @@ import cors from "cors";
 import { google } from "googleapis";
 import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
+import { buildBriefing } from "./scripts/briefing-core.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -274,6 +275,47 @@ app.post("/api/send-welcome", async (req, res) => {
 // Simple health check
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, sheets: sheetsConfigured, resend: resendConfigured, dashboard: dashboardConfigured });
+});
+
+/* ------------------------------------------------------------------ *
+ * Vercel Cron — daily morning briefing (Step 7).
+ * vercel.json schedules a daily GET to this path. When CRON_SECRET is set,
+ * Vercel attaches it as `Authorization: Bearer <CRON_SECRET>`, so we reject
+ * any request that doesn't carry the matching secret. Builds the briefing
+ * from the last 24h of real Supabase leads and emails it via Resend.
+ * ------------------------------------------------------------------ */
+const CRON_SECRET = process.env.CRON_SECRET || "";
+const BRIEFING_TO = process.env.RESEND_TO;
+
+app.get("/api/cron/briefing", async (req, res) => {
+  // Auth: if a secret is configured, require it (Vercel sends it automatically).
+  if (CRON_SECRET) {
+    const auth = req.get("authorization") || "";
+    if (auth !== `Bearer ${CRON_SECRET}`) {
+      return res.status(401).json({ ok: false, error: "Unauthorized." });
+    }
+  }
+  if (!resendConfigured) return res.status(503).json({ ok: false, error: "Resend not configured." });
+  if (!BRIEFING_TO) return res.status(503).json({ ok: false, error: "RESEND_TO not set." });
+
+  try {
+    const { briefing, html, subject, leads } = await buildBriefing("real", 24);
+    const { data, error } = await resend.emails.send({
+      from: RESEND_FROM,
+      to: [BRIEFING_TO],
+      subject,
+      html,
+      text: briefing,
+      ...(RESEND_REPLY_TO ? { replyTo: RESEND_REPLY_TO } : {}),
+    });
+    if (error) throw new Error(error.message || JSON.stringify(error));
+    await logEmailEvent({ email: BRIEFING_TO, kind: "briefing", subject, resendId: data?.id });
+    console.log(`[cron/briefing] sent to ${BRIEFING_TO} — ${leads.length} leads, id ${data?.id}`);
+    return res.json({ ok: true, id: data?.id, leads: leads.length });
+  } catch (err) {
+    console.error("[cron/briefing] failed:", err?.message || err);
+    return res.status(500).json({ ok: false, error: err?.message || "Briefing failed." });
+  }
 });
 
 /* ================================================================== *
