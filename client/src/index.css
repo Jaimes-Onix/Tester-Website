@@ -124,6 +124,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 /* shader intro loader */
 #loader { position:fixed; inset:0; z-index:100; display:grid; place-items:center; background:#000; overflow:hidden; transition:opacity .9s var(--ease-spring); }
 #loader.done { opacity:0; pointer-events:none; }
+/* Intro skipped this session (returning visit / reduced-motion): never show the loader. */
+html.no-intro #loader { display:none; }
 #intro-canvas { position:absolute; inset:0; z-index:0; width:100%; height:100%; display:block; opacity:0; transition:opacity 1s ease; }
 #intro-canvas.on { opacity:.95; }
 .intro-vignette { position:absolute; inset:0; z-index:1; pointer-events:none;

@@ -17,9 +17,21 @@
   <!-- Tester Tech display face — used by the page-transition overlay so it matches the Tester Tech theme -->
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet" />
 
-  <!-- enable JS animations only when motion is allowed (before paint) -->
+  <!-- enable JS animations only when motion is allowed (before paint).
+       The 5s intro shows only ONCE per browsing session — `intro` is added on the
+       first visit, then a sessionStorage flag suppresses it on later page loads
+       (internal navigation, back/forward). A brand-new visit/tab replays it.
+       When skipped we add `no-intro`, which hides #loader via CSS (no flash). -->
   <script>
-    (function () { var rm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; if (!rm) { document.documentElement.classList.add('anim'); document.documentElement.classList.add('intro'); } })();
+    (function () {
+      var d = document.documentElement;
+      var rm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var seen = false;
+      try { seen = sessionStorage.getItem('testerio_intro_seen') === '1'; } catch (e) {}
+      if (!rm) d.classList.add('anim');
+      if (!rm && !seen) d.classList.add('intro');
+      else d.classList.add('no-intro');
+    })();
   </script>
 
   <!-- Scale the whole UI up on large displays (≈115–130% browser zoom). Reconstructs the true

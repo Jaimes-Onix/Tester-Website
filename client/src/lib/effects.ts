@@ -109,10 +109,17 @@ export function useSiteEffects() {
       cleanups.push(() => window.removeEventListener("load", onLoad));
     }
 
-    /* ---------- 5-second shader intro ---------- */
+    /* ---------- 5-second shader intro (plays once per visit) ---------- */
     const loader = document.getElementById("loader");
     const INTRO_MS = 5000;
     let introTeardown: (() => void) | null = null;
+    // Show the intro only the FIRST time in a browsing session — not on every
+    // page navigation. The flag lives in sessionStorage (cleared when the tab
+    // closes, so a brand-new visit replays it). Swap to localStorage to show it
+    // only once ever per browser instead.
+    let introSeen = false;
+    try { introSeen = sessionStorage.getItem("testerio_intro_seen") === "1"; } catch { /* storage blocked */ }
+    const skipIntro = reduce || introSeen;
     const endIntro = () => {
       if (!loader || loader.classList.contains("done")) return;
       loader.classList.add("done");
@@ -121,10 +128,12 @@ export function useSiteEffects() {
       window.setTimeout(() => { if (introTeardown) introTeardown(); }, 1000);
     };
 
-    if (reduce) {
+    if (skipIntro) {
       if (loader) loader.style.display = "none";
       root.classList.remove("intro");
     } else {
+      // Mark it seen up front, so navigating away mid-intro still suppresses replays.
+      try { sessionStorage.setItem("testerio_intro_seen", "1"); } catch { /* storage blocked */ }
       const barFill = loader?.querySelector(".intro-bar > i") as HTMLElement | null;
       if (barFill) { barFill.style.transition = `width ${INTRO_MS - 400}ms linear`; requestAnimationFrame(() => (barFill.style.width = "100%")); }
       introTeardown = startIntroShader();

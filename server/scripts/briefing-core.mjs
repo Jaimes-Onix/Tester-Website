@@ -206,20 +206,32 @@ export function parseBriefing(text) {
   return { headline, items, focus, paras };
 }
 
-export function renderBriefingEmail({ briefing, count, dateLabel }) {
+export function renderBriefingEmail({ briefing, count, dateLabel, leads = [] }) {
   const { headline, items, focus, paras } = parseBriefing(briefing);
 
-  // A single lead "chip": gold rank badge + serif name + detail.
-  const chip = (it) => `
+  // Map each lead's name → the verbatim message they submitted, so we can show
+  // their actual words (not just the AI's paraphrase) on the card. Keyed by a
+  // normalized name; the AI is told to start each ranked line with the name.
+  const msgByName = new Map();
+  for (const l of leads) {
+    if (l?.name && l?.message) msgByName.set(l.name.trim().toLowerCase(), l.message.trim());
+  }
+
+  // A single lead "chip": gold rank badge + serif name + verbatim quote + detail.
+  const chip = (it) => {
+    const quote = msgByName.get((it.name || "").trim().toLowerCase());
+    return `
     <table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr>
       <td style="vertical-align:top;width:30px;">
         <div style="width:27px;height:27px;border-radius:99px;background:${C.badge};color:#3a2a0c;font-size:12px;font-weight:800;text-align:center;line-height:27px;box-shadow:0 2px 6px rgba(150,110,40,.3);">${esc(it.rank)}</div>
       </td>
       <td style="vertical-align:top;padding-left:12px;">
         <div style="font-family:${C.serif};font-size:16px;font-weight:700;color:${C.ink};letter-spacing:-.01em;">${esc(it.name)}</div>
-        ${it.detail ? `<div style="margin-top:4px;font-size:13px;line-height:1.6;color:${C.body};">${esc(it.detail)}</div>` : ""}
+        ${quote ? `<div style="margin-top:5px;padding:6px 10px;border-left:2px solid ${C.gold};background:rgba(169,116,43,.07);border-radius:0 6px 6px 0;font-size:12px;line-height:1.5;color:${C.body};font-style:italic;">&ldquo;${esc(quote)}&rdquo;</div>` : ""}
+        ${it.detail ? `<div style="margin-top:6px;font-size:13px;line-height:1.6;color:${C.body};">${esc(it.detail)}</div>` : ""}
       </td>
     </tr></table>`;
+  };
 
   // Right side: leads in a 2-column grid (walk items in pairs).
   let grid = "";
@@ -282,6 +294,6 @@ export async function buildBriefing(mode = "demo", hours = 24) {
     weekday: "long", year: "numeric", month: "long", day: "numeric",
   });
   const subject = `☀ Morning briefing — ${leads.length} new lead${leads.length === 1 ? "" : "s"}`;
-  const html = renderBriefingEmail({ briefing, count: leads.length, dateLabel });
+  const html = renderBriefingEmail({ briefing, count: leads.length, dateLabel, leads });
   return { leads, briefing, html, subject, dateLabel };
 }
