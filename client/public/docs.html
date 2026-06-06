@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Docs · Tester.io</title>
+  <meta name="description" content="Developer documentation for the Tester.io API — authentication, market data, and placing orders." />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <meta name="theme-color" content="#000000" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/pages.css" />
+</head>
+<body>
+  <div class="grain"></div>
+  <header>
+    <nav>
+      <a class="brand" href="/" aria-label="Tester.io home"><img src="/tester-logo.png" alt="" />Tester<span class="gold">.io</span></a>
+      <div class="nav-right">
+        <a class="nav-link" href="/#features">Product</a>
+        <a class="nav-link" href="/whitepaper.html">Whitepaper</a>
+        <a class="nav-link" href="/support.html">Support</a>
+        <a class="nav-back" href="/">‹ Back to home</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="phead">
+      <div class="wrap">
+        <span class="eyebrow" data-rise>Developer docs</span>
+        <h1 data-rise>Build on <em class="gold">Tester.io</em>.</h1>
+        <p class="lede" data-rise>A clean REST + WebSocket API for market data, accounts, and order execution. Get a key, make your first request in minutes.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <h2 data-rise>Quickstart</h2>
+        <p data-rise>Authenticate with a bearer token, then call the REST API. Every response is JSON.</p>
+        <pre class="code" data-rise><span class="c"># Fetch the current TST market</span>
+curl https://api.tester.io/v1/markets/TST-USD \
+  -H <span class="k">"Authorization: Bearer $TESTER_API_KEY"</span></pre>
+
+        <h2 data-rise>Explore the API</h2>
+        <div class="grid g3">
+          <div class="card" data-rise>
+            <span class="icon-tile"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg></span>
+            <h3>Authentication</h3>
+            <p>Create and rotate API keys, scope permissions, and sign requests.</p>
+          </div>
+          <div class="card" data-rise>
+            <span class="icon-tile"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-8" /></svg></span>
+            <h3>Market data</h3>
+            <p>REST snapshots and WebSocket streams for prices, depth, and trades.</p>
+          </div>
+          <div class="card" data-rise>
+            <span class="icon-tile"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span>
+            <h3>Orders</h3>
+            <p>Place, modify, and cancel leveraged orders with idempotency keys.</p>
+          </div>
+        </div>
+
+        <h2 data-rise>Conventions</h2>
+        <ul class="bul" data-rise>
+          <li>Base URL: <strong>https://api.tester.io/v1</strong></li>
+          <li>All timestamps are ISO-8601 UTC.</li>
+          <li>Rate limits are returned in the <strong>X-RateLimit-*</strong> headers.</li>
+          <li>Errors use standard HTTP status codes with a JSON <strong>error</strong> body.</li>
+        </ul>
+
+        <div class="cta" data-rise>
+          <h2>Need a hand?</h2>
+          <p class="muted">Our team is happy to help you ship your integration.</p>
+          <div class="btn-row" style="justify-content:center">
+            <a class="btn btn-gold" href="/support.html">Contact support</a>
+            <a class="btn btn-ghost" href="/whitepaper.html">Read the whitepaper</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap foot">
+      <span>© <span id="yr">2026</span> Tester.io · The future of leverage.</span>
+      <div class="foot-links">
+        <a href="/about.html">About</a><a href="/whitepaper.html">Whitepaper</a><a href="/support.html">Support</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/">Home ↗</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const h=document.querySelector('header');
+    addEventListener('scroll',()=>h.classList.toggle('scrolled',scrollY>10),{passive:true});
+    const io=new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.1});
+    document.querySelectorAll('[data-rise]').forEach((el,i)=>{el.style.transitionDelay=((i%6)*0.05)+'s';io.observe(el)});
+    const y=document.getElementById('yr');if(y)y.textContent=new Date().getFullYear();
+  </script>
+</body>
+</html>

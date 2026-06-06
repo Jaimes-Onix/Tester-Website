@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Whitepaper · Tester.io</title>
+  <meta name="description" content="The Tester.io whitepaper — protocol design, the TST token economy, and the roadmap for the future of leverage." />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <meta name="theme-color" content="#000000" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/pages.css" />
+</head>
+<body>
+  <div class="grain"></div>
+  <header>
+    <nav>
+      <a class="brand" href="/" aria-label="Tester.io home"><img src="/tester-logo.png" alt="" />Tester<span class="gold">.io</span></a>
+      <div class="nav-right">
+        <a class="nav-link" href="/#features">Product</a>
+        <a class="nav-link" href="/docs.html">Docs</a>
+        <a class="nav-link" href="/token-metrics.html">Token</a>
+        <a class="nav-back" href="/">‹ Back to home</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="phead">
+      <div class="wrap">
+        <span class="eyebrow" data-rise>Whitepaper · v2.1</span>
+        <h1 data-rise>The Tester.io <em class="gold">whitepaper</em>.</h1>
+        <p class="lede" data-rise>Everything about the protocol, the TST token economy, and where we're headed — in one document.</p>
+        <div class="btn-row" data-rise>
+          <a class="btn btn-gold" href="#abstract">Read online</a>
+          <a class="btn btn-ghost" href="/token-metrics.html">Token metrics</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="narrow">
+        <div class="toc" data-rise>
+          <div class="toc-title">Contents</div>
+          <ol>
+            <li><a href="#abstract">Abstract</a></li>
+            <li><a href="#problem">The problem</a></li>
+            <li><a href="#protocol">Protocol design</a></li>
+            <li><a href="#token">Token economy</a></li>
+            <li><a href="#roadmap">Roadmap</a></li>
+          </ol>
+        </div>
+
+        <h2 id="abstract" data-rise>Abstract</h2>
+        <p data-rise>Tester.io is a platform for leveraged exposure to any token, built on self-custody rails. This paper describes the execution model, the risk framework that protects users, and the TST token that aligns the network's participants.</p>
+
+        <h2 id="problem" data-rise>The problem</h2>
+        <p data-rise>Leverage has historically meant trusting an opaque intermediary with your assets. Tester.io removes that trade-off: users keep custody while still accessing fast, predictable execution and transparent risk views.</p>
+
+        <h2 id="protocol" data-rise>Protocol design</h2>
+        <ul class="bul" data-rise>
+          <li>Deterministic order pipeline tuned for low, steady latency.</li>
+          <li>On-chain settlement with off-chain matching for speed.</li>
+          <li>Continuous liquidation engine with conservative, transparent margins.</li>
+          <li>Open APIs so developers can build their own tools on top.</li>
+        </ul>
+
+        <h2 id="token" data-rise>Token economy</h2>
+        <p data-rise>The TST token coordinates fees, governance, and incentives across the network. Full supply and distribution figures live on the <a class="gold" href="/token-metrics.html">token metrics</a> page.</p>
+
+        <h2 id="roadmap" data-rise>Roadmap</h2>
+        <ul class="bul" data-rise>
+          <li><strong>2014–2017</strong> — Core definitions and automated execution tools shipped.</li>
+          <li><strong>2022</strong> — Developer APIs (in progress).</li>
+          <li><strong>2025+</strong> — Community governance and discussion layer (planned).</li>
+        </ul>
+
+        <div class="cta" data-rise>
+          <h2>Prefer the PDF?</h2>
+          <p class="muted">The downloadable edition is being finalized. In the meantime, reach us with questions.</p>
+          <div class="btn-row" style="justify-content:center">
+            <a class="btn btn-gold" href="/support.html">Ask a question</a>
+            <a class="btn btn-ghost" href="/docs.html">Read the docs</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap foot">
+      <span>© <span id="yr">2026</span> Tester.io · The future of leverage.</span>
+      <div class="foot-links">
+        <a href="/about.html">About</a><a href="/whitepaper.html">Whitepaper</a><a href="/support.html">Support</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/">Home ↗</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const h=document.querySelector('header');
+    addEventListener('scroll',()=>h.classList.toggle('scrolled',scrollY>10),{passive:true});
+    const io=new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.1});
+    document.querySelectorAll('[data-rise]').forEach((el,i)=>{el.style.transitionDelay=((i%6)*0.05)+'s';io.observe(el)});
+    const y=document.getElementById('yr');if(y)y.textContent=new Date().getFullYear();
+  </script>
+</body>
+</html>

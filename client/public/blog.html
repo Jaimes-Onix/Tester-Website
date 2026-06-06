@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog · Tester.io</title>
+  <meta name="description" content="Product updates, market notes, and engineering deep-dives from the Tester.io team." />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <meta name="theme-color" content="#000000" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/pages.css" />
+</head>
+<body>
+  <div class="grain"></div>
+  <header>
+    <nav>
+      <a class="brand" href="/" aria-label="Tester.io home"><img src="/tester-logo.png" alt="" />Tester<span class="gold">.io</span></a>
+      <div class="nav-right">
+        <a class="nav-link" href="/#features">Product</a>
+        <a class="nav-link" href="/docs.html">Docs</a>
+        <a class="nav-link" href="/support.html">Support</a>
+        <a class="nav-back" href="/">‹ Back to home</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="phead">
+      <div class="wrap">
+        <span class="eyebrow" data-rise>Blog</span>
+        <h1 data-rise>Notes from the <em class="gold">desk</em>.</h1>
+        <p class="lede" data-rise>Product updates, market thinking, and engineering deep-dives — written by the people building Tester.io.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="grid g3">
+          <article class="card" data-rise>
+            <span class="pill">Product</span>
+            <h3 style="margin-top:14px">Introducing real-time risk views</h3>
+            <p>A new portfolio dashboard that surfaces liquidation distance and exposure at a glance.</p>
+            <p class="meta">May 28, 2026 · 5 min read</p>
+          </article>
+          <article class="card" data-rise>
+            <span class="pill">Engineering</span>
+            <h3 style="margin-top:14px">How we cut execution latency by 40%</h3>
+            <p>A look under the hood at the order pipeline rewrite that made fills faster and steadier.</p>
+            <p class="meta">May 14, 2026 · 8 min read</p>
+          </article>
+          <article class="card" data-rise>
+            <span class="pill">Market</span>
+            <h3 style="margin-top:14px">Leverage, sanely: a primer</h3>
+            <p>What leverage really costs, how liquidations work, and how to size positions you can sleep on.</p>
+            <p class="meta">Apr 30, 2026 · 6 min read</p>
+          </article>
+          <article class="card" data-rise>
+            <span class="pill">Token</span>
+            <h3 style="margin-top:14px">TST tokenomics, explained</h3>
+            <p>Supply, distribution, and the mechanics behind the Tester.io token economy.</p>
+            <p class="meta">Apr 12, 2026 · 7 min read</p>
+          </article>
+          <article class="card" data-rise>
+            <span class="pill">Community</span>
+            <h3 style="margin-top:14px">370,000 strong — thank you</h3>
+            <p>A note to the community that got us here, and where we're pointed next.</p>
+            <p class="meta">Mar 29, 2026 · 3 min read</p>
+          </article>
+          <article class="card" data-rise>
+            <span class="pill">Security</span>
+            <h3 style="margin-top:14px">Self-custody by default</h3>
+            <p>Why your keys stay yours, and the safeguards we layer on top.</p>
+            <p class="meta">Mar 15, 2026 · 5 min read</p>
+          </article>
+        </div>
+
+        <div class="cta" data-rise>
+          <h2>Get posts in your inbox</h2>
+          <p class="muted">No spam — just product news and the occasional deep-dive.</p>
+          <div class="btn-row" style="justify-content:center">
+            <a class="btn btn-gold" href="/#contact">Subscribe</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap foot">
+      <span>© <span id="yr">2026</span> Tester.io · The future of leverage.</span>
+      <div class="foot-links">
+        <a href="/about.html">About</a><a href="/whitepaper.html">Whitepaper</a><a href="/support.html">Support</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/">Home ↗</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const h=document.querySelector('header');
+    addEventListener('scroll',()=>h.classList.toggle('scrolled',scrollY>10),{passive:true});
+    const io=new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.1});
+    document.querySelectorAll('[data-rise]').forEach((el,i)=>{el.style.transitionDelay=((i%6)*0.05)+'s';io.observe(el)});
+    const y=document.getElementById('yr');if(y)y.textContent=new Date().getFullYear();
+  </script>
+</body>
+</html>

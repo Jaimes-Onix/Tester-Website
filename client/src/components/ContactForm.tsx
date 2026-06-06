@@ -144,7 +144,7 @@ export default function ContactForm() {
           </p>
 
           <ul className="mt-8 space-y-3.5 max-w-md">
-            {["No spam — token updates and product drops only", "Be first in line for the Tester Pro Terminal", "Replies from a real human within one business day"].map((t) => (
+            {["No spam — token updates and product drops only", "Be first in line for the Tester Smart Watch Pro", "Replies from a real human within one business day"].map((t) => (
               <li key={t} className="flex items-center gap-3 text-[14px] font-medium text-white/90">
                 <span
                   className="grid place-items-center h-6 w-6 shrink-0 rounded-full"

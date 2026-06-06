@@ -213,7 +213,7 @@ function welcomeEmailHtml(firstName) {
         </h1>
         <p style="margin:16px 0 0;font-size:15px;line-height:1.7;color:#cfcdc8;">
           Thanks for reaching out to Tester.io — we've saved your details and you're
-          in line for early access to the Tester Pro Terminal.
+          in line for early access to the Tester Smart Watch Pro.
         </p>
         <p style="margin:16px 0 0;font-size:15px;line-height:1.7;color:#cfcdc8;">
           <strong style="color:#F2DDA8;">One quick favor:</strong> just hit

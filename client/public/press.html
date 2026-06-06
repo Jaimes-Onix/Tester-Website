@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Press Kit · Tester.io</title>
+  <meta name="description" content="Logos, brand assets, boilerplate, and media contact for Tester.io." />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <meta name="theme-color" content="#000000" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/pages.css" />
+</head>
+<body>
+  <div class="grain"></div>
+  <header>
+    <nav>
+      <a class="brand" href="/" aria-label="Tester.io home"><img src="/tester-logo.png" alt="" />Tester<span class="gold">.io</span></a>
+      <div class="nav-right">
+        <a class="nav-link" href="/#features">Product</a>
+        <a class="nav-link" href="/docs.html">Docs</a>
+        <a class="nav-link" href="/support.html">Support</a>
+        <a class="nav-back" href="/">‹ Back to home</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="phead">
+      <div class="wrap">
+        <span class="eyebrow" data-rise>Press</span>
+        <h1 data-rise>Press <em class="gold">kit</em>.</h1>
+        <p class="lede" data-rise>Everything you need to write about Tester.io — brand assets, fast facts, and how to reach us. For interviews or anything not covered here, email <a class="gold" href="mailto:press@tester.io">press@tester.io</a>.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <h2 data-rise>Fast facts</h2>
+        <div class="stats">
+          <div class="stat" data-rise><div class="num gold">2014</div><div class="lab">Founded</div></div>
+          <div class="stat" data-rise><div class="num gold">370K+</div><div class="lab">Participants</div></div>
+          <div class="stat" data-rise><div class="num gold">$49M</div><div class="lab">Contributed</div></div>
+          <div class="stat" data-rise><div class="num gold">Remote</div><div class="lab">Global team</div></div>
+        </div>
+
+        <h2 data-rise>Brand assets</h2>
+        <div class="grid g2">
+          <div class="card" data-rise style="display:flex;align-items:center;justify-content:space-between;gap:18px">
+            <div style="display:flex;align-items:center;gap:14px"><img src="/tester-logo.png" alt="Tester.io logo mark" width="44" height="44" /><div><div style="font-weight:700">Logo mark</div><div class="meta">PNG · transparent</div></div></div>
+            <a class="btn btn-ghost" href="/tester-logo.png" download>Download</a>
+          </div>
+          <div class="card" data-rise style="display:flex;align-items:center;justify-content:space-between;gap:18px">
+            <div><div style="font-weight:800;font-size:1.2rem">Tester<span class="gold">.io</span></div><div class="meta">Wordmark usage</div></div>
+            <a class="btn btn-ghost" href="/tester-logo.png" download>Download</a>
+          </div>
+        </div>
+
+        <h2 data-rise>Boilerplate</h2>
+        <p data-rise>Tester.io builds the tools that let anyone trade, monitor, and hold the tokens they believe in. Founded in 2014, the platform pairs a fast, reliable execution engine with self-custody and transparent analytics — performance trusted by a community of more than 370,000 participants.</p>
+
+        <div class="cta" data-rise>
+          <h2>Media inquiries</h2>
+          <p class="muted">We typically respond within one business day.</p>
+          <div class="btn-row" style="justify-content:center">
+            <a class="btn btn-gold" href="mailto:press@tester.io">Email press@tester.io</a>
+            <a class="btn btn-ghost" href="/about.html">About Tester.io</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap foot">
+      <span>© <span id="yr">2026</span> Tester.io · The future of leverage.</span>
+      <div class="foot-links">
+        <a href="/about.html">About</a><a href="/whitepaper.html">Whitepaper</a><a href="/support.html">Support</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/">Home ↗</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const h=document.querySelector('header');
+    addEventListener('scroll',()=>h.classList.toggle('scrolled',scrollY>10),{passive:true});
+    const io=new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.1});
+    document.querySelectorAll('[data-rise]').forEach((el,i)=>{el.style.transitionDelay=((i%6)*0.05)+'s';io.observe(el)});
+    const y=document.getElementById('yr');if(y)y.textContent=new Date().getFullYear();
+  </script>
+</body>
+</html>

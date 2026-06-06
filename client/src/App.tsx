@@ -1,4 +1,5 @@
-import { useState, type MouseEvent } from "react";
+import { useState, useEffect, type MouseEvent, type FormEvent } from "react";
+import { subscribeEmail } from "./lib/subscribe";
 import ExpandingCards from "./components/ExpandingCards";
 import ContactForm from "./components/ContactForm";
 import ChatWidget from "./components/ChatWidget";
@@ -90,6 +91,46 @@ export default function App() {
 
   const [authMode, setAuthMode] = useState<"login" | "signup" | null>(null);
   const [leaving, setLeaving] = useState(false);
+  const [email, setEmail] = useState("");
+  const [subEmail, setSubEmail] = useState("");
+  const [subStatus, setSubStatus] = useState<"idle" | "sending" | "done" | "error">("idle");
+  const [subError, setSubError] = useState("");
+
+  /** Hero "Get Early Access": capture the typed email as a lead (best-effort),
+   *  then open the signup modal (which pre-fills the same email). */
+  const handleHeroAccess = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (email.trim()) void subscribeEmail(email, "hero");
+    setAuthMode("signup");
+  };
+
+  /** Footer newsletter subscribe — posts the email to a real endpoint and
+   *  reflects success/error inline. */
+  const handleSubscribe = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (subStatus === "sending") return;
+    setSubStatus("sending");
+    setSubError("");
+    const res = await subscribeEmail(subEmail, "footer");
+    if (res.ok) {
+      setSubStatus("done");
+      setSubEmail("");
+    } else {
+      setSubStatus("error");
+      setSubError(res.error || "Something went wrong.");
+    }
+  };
+
+  /** Clear the page-wipe overlay if the page is restored from the back/forward
+   *  cache (bfcache) — otherwise the frozen `leaving=true` state leaves a black
+   *  overlay covering the whole viewport after a Back navigation. */
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) setLeaving(false);
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
 
   /** Smoothly scroll to the contact form under the hero. */
   const scrollToContact = () => {
@@ -144,7 +185,7 @@ export default function App() {
               <a href="#how" className="hover:text-gold-200 transition-colors duration-300">How it works</a>
               <a href="#roadmap" className="hover:text-gold-200 transition-colors duration-300">Roadmap</a>
               <a href="#products" className="hover:text-gold-200 transition-colors duration-300">Products</a>
-              <button type="button" onClick={scrollToContact} className="hover:text-gold-200 transition-colors duration-300">Contact</button>
+              <a href="#contact" onClick={(e) => { e.preventDefault(); scrollToContact(); }} className="hover:text-gold-200 transition-colors duration-300">Contact</a>
             </div>
             <div className="flex items-center gap-2.5">
               <button type="button" onClick={scrollToContact} className="hidden sm:inline-flex items-center text-[13px] 2xl:text-[16px] font-bold btn-ghost rounded-full px-5 py-2.5 2xl:px-7 2xl:py-3">Contact</button>
@@ -174,12 +215,12 @@ export default function App() {
               Leverage on any tokens with a product trusted by billions for its performance and reliability.
             </p>
 
-            <form className="rise mx-auto mt-8 2xl:mt-10 flex flex-col sm:flex-row items-stretch gap-2.5 max-w-lg xl:max-w-xl" style={{ animationDelay: ".28s" }} onSubmit={(e) => e.preventDefault()}>
+            <form className="rise mx-auto mt-8 2xl:mt-10 flex flex-col sm:flex-row items-stretch gap-2.5 max-w-lg xl:max-w-xl" style={{ animationDelay: ".28s" }} onSubmit={handleHeroAccess}>
               <div className="flex items-center gap-2.5 flex-1 rounded-full chip px-4 py-3 2xl:px-5 2xl:py-4">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" className="2xl:w-5 2xl:h-5"><path d="M4 6h16v12H4z" stroke="#8A8A8F" strokeWidth="1.6" /><path d="m4 7 8 6 8-6" stroke="#8A8A8F" strokeWidth="1.6" /></svg>
-                <input type="email" placeholder="Business email" className="bg-transparent w-full text-[14px] 2xl:text-[16px] text-white placeholder:text-mute outline-none" />
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Business email" className="bg-transparent w-full text-[14px] 2xl:text-[16px] text-white placeholder:text-mute outline-none" />
               </div>
-              <button type="submit" onClick={() => setAuthMode("signup")} data-magnetic className="inline-flex items-center justify-center gap-2 text-[13px] 2xl:text-[15px] font-bold btn-gold rounded-full px-6 py-3 2xl:px-8 2xl:py-4 whitespace-nowrap">Get Early Access</button>
+              <button type="submit" data-magnetic className="inline-flex items-center justify-center gap-2 text-[13px] 2xl:text-[15px] font-bold btn-gold rounded-full px-6 py-3 2xl:px-8 2xl:py-4 whitespace-nowrap">Get Early Access</button>
             </form>
             <p className="rise mt-4 text-[13px] 2xl:text-[15px] font-medium text-mute" style={{ animationDelay: ".34s" }}>Start monitoring for free or message us!</p>
 
@@ -312,7 +353,7 @@ export default function App() {
                 <div className="rounded-xl chip py-3 text-center"><div id="cd-s" className="text-[26px] font-extrabold leading-none text-gold-grad">03</div><div className="mt-1.5 text-[10px] uppercase tracking-wide text-mute">Second</div></div>
               </div>
               <p className="text-[18px] font-extrabold mb-4"><span className="text-gold-grad" data-count="49222300" data-prefix="$">$49,222,300</span> <span className="text-[13px] font-medium text-mute">contribution received</span></p>
-              <a href="#" data-magnetic className="inline-flex items-center text-[13px] font-bold btn-gold rounded-full px-6 py-3 mb-5">Purchase Now</a>
+              <button type="button" onClick={() => setAuthMode("signup")} data-magnetic className="inline-flex items-center text-[13px] font-bold btn-gold rounded-full px-6 py-3 mb-5">Purchase Now</button>
               <div className="track mb-2" data-progress="46"><i /></div>
               <div className="flex justify-between text-[12px] font-medium text-mute"><span>$5M</span><span>$99M</span></div>
               <div className="mt-4 flex items-center justify-between rounded-lg chip px-3 py-2 text-[11px] font-mono text-mute">
@@ -363,19 +404,19 @@ export default function App() {
                 <span className="icon-tile w-14 h-14 mb-5"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#E6B979" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M7 3h7l4 4v14H7z" /><path d="M14 3v4h4M9 13h6M9 17h5" /></svg></span>
                 <h3 className="text-[16px] font-bold">Read our white paper</h3>
                 <p className="mt-2 text-[13px] text-mute flex-1">Everything about the Tester.io token economy in one document.</p>
-                <a href="#" className="mt-5 inline-flex items-center text-[12px] font-bold btn-ghost rounded-full px-5 py-2.5">Open Whitepaper</a>
+                <a href="/whitepaper.html" className="mt-5 inline-flex items-center text-[12px] font-bold btn-ghost rounded-full px-5 py-2.5">Open Whitepaper</a>
               </div>
               <div className="reveal card rounded-2xl p-7 text-center flex flex-col items-center">
                 <span className="icon-tile w-14 h-14 mb-5"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#E6B979" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v10M9.5 9.5h4a1.5 1.5 0 0 1 0 3h-3a1.5 1.5 0 0 0 0 3h4" /></svg></span>
                 <h3 className="text-[16px] font-bold">1 TST token price</h3>
                 <p className="mt-2 text-[13px] text-mute flex-1">Now at <span className="text-gold-200 font-semibold">0.00014 BTC</span> — early supporters win.</p>
-                <a href="#" data-magnetic className="mt-5 inline-flex items-center text-[12px] font-bold btn-gold rounded-full px-5 py-2.5">Buy Tokens</a>
+                <button type="button" onClick={() => setAuthMode("signup")} data-magnetic className="mt-5 inline-flex items-center text-[12px] font-bold btn-gold rounded-full px-5 py-2.5">Buy Tokens</button>
               </div>
               <div className="reveal card rounded-2xl p-7 text-center flex flex-col items-center">
                 <span className="icon-tile w-14 h-14 mb-5"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#E6B979" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="8" r="3.2" /><path d="M3.5 19a5.5 5.5 0 0 1 11 0" /><path d="M16 5.2a3 3 0 0 1 0 5.6M21 19a5 5 0 0 0-4-4.9" /></svg></span>
                 <h3 className="text-[16px] font-bold">ICO Participants</h3>
                 <p className="mt-2 text-[13px] text-mute flex-1"><span className="text-gold-grad font-extrabold text-[20px]" data-count="370000" data-suffix="+">370,000+</span> believers and counting.</p>
-                <a href="#" className="mt-5 inline-flex items-center text-[12px] font-bold btn-ghost rounded-full px-5 py-2.5">Join our Telegram</a>
+                <a href="https://t.me/" target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center text-[12px] font-bold btn-ghost rounded-full px-5 py-2.5">Join our Telegram</a>
               </div>
             </div>
           </div>
@@ -387,7 +428,7 @@ export default function App() {
             <div className="reveal text-center max-w-2xl mx-auto">
               <span className="inline-flex items-center gap-2 rounded-full pill px-3.5 py-1.5 text-[12px] font-semibold text-gold-200">Products</span>
               <h2 className="mt-5 text-[32px] sm:text-[42px] font-extrabold tracking-tightest leading-[1.08]">Explore our <span className="text-gold-grad">product</span></h2>
-              <p className="mt-4 text-[15px] leading-[1.7] font-medium text-mute">A dedicated product built for leverage trading, real-time monitoring, and on-chain analytics.</p>
+              <p className="mt-4 text-[15px] leading-[1.7] font-medium text-mute">A flagship wearable built for leverage-trading alerts, real-time monitoring, and on-chain analytics — right on your wrist.</p>
             </div>
 
             <div className="reveal mt-12 card rounded-3xl p-8 sm:p-12 grid md:grid-cols-2 gap-10 items-center max-w-5xl mx-auto">
@@ -414,9 +455,9 @@ export default function App() {
                 </div>
               </div>
               <div>
-                <h3 className="text-[24px] sm:text-[28px] font-extrabold tracking-tightest">Tester Pro Terminal</h3>
-                <p className="mt-3 text-[14px] leading-[1.7] text-mute">The all-in-one terminal for serious traders — live data, advanced dashboards, and audit-ready reporting.</p>
-                <p className="mt-4 text-[20px] font-extrabold text-gold-grad">$49 <span className="text-[13px] font-medium text-mute">/ month</span></p>
+                <h3 className="text-[24px] sm:text-[28px] font-extrabold tracking-tightest">Tester Smart Watch Pro</h3>
+                <p className="mt-3 text-[14px] leading-[1.7] text-mute">A titanium smartwatch with a sapphire display and 38-hour battery — live trade alerts, portfolio monitoring, and health tracking on your wrist.</p>
+                <p className="mt-4 text-[20px] font-extrabold text-gold-grad">$399 <span className="text-[13px] font-medium text-mute">one-time</span></p>
                 <a href="/product.html" data-magnetic className="mt-6 inline-flex items-center gap-2 text-[13px] font-bold btn-gold rounded-full px-6 py-3">
                   View Product
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
@@ -559,13 +600,20 @@ export default function App() {
               <h3 className="text-[24px] sm:text-[28px] font-extrabold tracking-tightest leading-tight">Stay ahead of the <span className="text-gold-grad">curve</span></h3>
               <p className="mt-2 text-[14px] text-mute max-w-md">Get token updates, roadmap drops, and early-access invites — straight to your inbox.</p>
             </div>
-            <form className="flex flex-col sm:flex-row items-stretch gap-2.5 w-full lg:w-auto" onSubmit={(e) => e.preventDefault()}>
-              <div className="flex items-center gap-2.5 flex-1 lg:w-72 rounded-full chip px-4 py-3">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 6h16v12H4z" stroke="#8A8A8F" strokeWidth="1.6" /><path d="m4 7 8 6 8-6" stroke="#8A8A8F" strokeWidth="1.6" /></svg>
-                <input type="email" placeholder="Your email" className="bg-transparent w-full text-[14px] text-white placeholder:text-mute outline-none" />
-              </div>
-              <button type="submit" data-magnetic className="inline-flex items-center justify-center gap-2 text-[13px] font-bold btn-gold rounded-full px-6 py-3 whitespace-nowrap">Subscribe</button>
-            </form>
+            <div className="w-full lg:w-auto">
+              <form className="flex flex-col sm:flex-row items-stretch gap-2.5" onSubmit={handleSubscribe}>
+                <div className="flex items-center gap-2.5 flex-1 lg:w-72 rounded-full chip px-4 py-3">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 6h16v12H4z" stroke="#8A8A8F" strokeWidth="1.6" /><path d="m4 7 8 6 8-6" stroke="#8A8A8F" strokeWidth="1.6" /></svg>
+                  <input type="email" required value={subEmail} onChange={(e) => { setSubEmail(e.target.value); if (subStatus !== "idle") setSubStatus("idle"); }} placeholder="Your email" aria-label="Email address" className="bg-transparent w-full text-[14px] text-white placeholder:text-mute outline-none" />
+                </div>
+                <button type="submit" disabled={subStatus === "sending"} data-magnetic className="inline-flex items-center justify-center gap-2 text-[13px] font-bold btn-gold rounded-full px-6 py-3 whitespace-nowrap disabled:opacity-60">
+                  {subStatus === "sending" ? "Subscribing…" : subStatus === "done" ? "Subscribed ✓" : "Subscribe"}
+                </button>
+              </form>
+              <p aria-live="polite" className={`mt-2 text-[12.5px] font-medium min-h-[1.1em] ${subStatus === "error" ? "text-red-400" : "text-gold-200"}`}>
+                {subStatus === "done" ? "You're on the list — check your inbox for a confirmation." : subStatus === "error" ? subError : ""}
+              </p>
+            </div>
           </div>
 
           <div className="reveal grid grid-cols-2 md:grid-cols-6 gap-10 py-14">
@@ -574,10 +622,10 @@ export default function App() {
               <p className="mt-5 max-w-xs text-[14px] leading-[1.7] text-mute">The future of leverage — built on Web3, powered by you. Trade, monitor, and hold the tokens you love.</p>
               <span className="mt-5 inline-flex items-center gap-2 rounded-full pill px-3 py-1.5 text-[11px] font-semibold text-gold-200"><span className="h-1.5 w-1.5 rounded-full bg-gold-300" /> Built on Web3. Powered by You</span>
               <div className="mt-6 flex gap-2.5">
-                <a href="#" aria-label="X / Twitter" className="grid place-items-center h-9 w-9 rounded-full chip text-mute hover:text-gold-200 hover:border-gold-400 transition-colors duration-300"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h3l-7 8 8 12h-6l-5-7-6 7H2l8-9L2 2h6l4 6 6-6z" /></svg></a>
-                <a href="#" aria-label="Telegram" className="grid place-items-center h-9 w-9 rounded-full chip text-mute hover:text-gold-200 hover:border-gold-400 transition-colors duration-300"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3 2.7 11.7c-1 .4-1 1.7.1 2l4.8 1.5 1.8 5.8c.3.8 1.2 1 1.8.4l2.6-2.5 4.7 3.5c.7.5 1.6.1 1.8-.7l3-15.4c.2-1-.7-1.8-1.4-1.5zM9.7 14.3l8.2-5-6.7 6.2-.2 3.1z" /></svg></a>
-                <a href="#" aria-label="Discord" className="grid place-items-center h-9 w-9 rounded-full chip text-mute hover:text-gold-200 hover:border-gold-400 transition-colors duration-300"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 5a16 16 0 0 0-4-1.2l-.2.5a13 13 0 0 1 3.5 1.2 12 12 0 0 0-10.5 0A13 13 0 0 1 11.2 4.3L11 3.8A16 16 0 0 0 7 5C4.2 9 3.6 13 3.8 17a16 16 0 0 0 4.8 2.4l1-1.6a10 10 0 0 1-1.6-.8l.4-.3a11 11 0 0 0 9.3 0l.4.3a10 10 0 0 1-1.7.8l1 1.6A16 16 0 0 0 22.2 17c.3-4.7-.6-8.6-3.2-12zM9.5 14.5c-.8 0-1.4-.7-1.4-1.6s.6-1.7 1.4-1.7 1.5.8 1.4 1.7c0 .9-.6 1.6-1.4 1.6zm5 0c-.8 0-1.4-.7-1.4-1.6s.6-1.7 1.4-1.7 1.5.8 1.4 1.7c0 .9-.6 1.6-1.4 1.6z" /></svg></a>
-                <a href="#" aria-label="GitHub" className="grid place-items-center h-9 w-9 rounded-full chip text-mute hover:text-gold-200 hover:border-gold-400 transition-colors duration-300"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .8.1-.6.3-1.1.6-1.4-2.2-.2-4.6-1.1-4.6-5a3.9 3.9 0 0 1 1-2.7c-.1-.3-.5-1.3.1-2.7 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .6 1.4.2 2.4.1 2.7a3.9 3.9 0 0 1 1 2.7c0 3.9-2.3 4.8-4.6 5 .4.3.7.9.7 1.8v2.7c0 .3.2.6.7.5A10 10 0 0 0 12 2z" /></svg></a>
+                <a href="https://x.com/" target="_blank" rel="noopener noreferrer" aria-label="X / Twitter" className="grid place-items-center h-9 w-9 rounded-full chip text-mute hover:text-gold-200 hover:border-gold-400 transition-colors duration-300"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h3l-7 8 8 12h-6l-5-7-6 7H2l8-9L2 2h6l4 6 6-6z" /></svg></a>
+                <a href="https://t.me/" target="_blank" rel="noopener noreferrer" aria-label="Telegram" className="grid place-items-center h-9 w-9 rounded-full chip text-mute hover:text-gold-200 hover:border-gold-400 transition-colors duration-300"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3 2.7 11.7c-1 .4-1 1.7.1 2l4.8 1.5 1.8 5.8c.3.8 1.2 1 1.8.4l2.6-2.5 4.7 3.5c.7.5 1.6.1 1.8-.7l3-15.4c.2-1-.7-1.8-1.4-1.5zM9.7 14.3l8.2-5-6.7 6.2-.2 3.1z" /></svg></a>
+                <a href="https://discord.com/" target="_blank" rel="noopener noreferrer" aria-label="Discord" className="grid place-items-center h-9 w-9 rounded-full chip text-mute hover:text-gold-200 hover:border-gold-400 transition-colors duration-300"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 5a16 16 0 0 0-4-1.2l-.2.5a13 13 0 0 1 3.5 1.2 12 12 0 0 0-10.5 0A13 13 0 0 1 11.2 4.3L11 3.8A16 16 0 0 0 7 5C4.2 9 3.6 13 3.8 17a16 16 0 0 0 4.8 2.4l1-1.6a10 10 0 0 1-1.6-.8l.4-.3a11 11 0 0 0 9.3 0l.4.3a10 10 0 0 1-1.7.8l1 1.6A16 16 0 0 0 22.2 17c.3-4.7-.6-8.6-3.2-12zM9.5 14.5c-.8 0-1.4-.7-1.4-1.6s.6-1.7 1.4-1.7 1.5.8 1.4 1.7c0 .9-.6 1.6-1.4 1.6zm5 0c-.8 0-1.4-.7-1.4-1.6s.6-1.7 1.4-1.7 1.5.8 1.4 1.7c0 .9-.6 1.6-1.4 1.6z" /></svg></a>
+                <a href="https://github.com/" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="grid place-items-center h-9 w-9 rounded-full chip text-mute hover:text-gold-200 hover:border-gold-400 transition-colors duration-300"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .8.1-.6.3-1.1.6-1.4-2.2-.2-4.6-1.1-4.6-5a3.9 3.9 0 0 1 1-2.7c-.1-.3-.5-1.3.1-2.7 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .6 1.4.2 2.4.1 2.7a3.9 3.9 0 0 1 1 2.7c0 3.9-2.3 4.8-4.6 5 .4.3.7.9.7 1.8v2.7c0 .3.2.6.7.5A10 10 0 0 0 12 2z" /></svg></a>
               </div>
             </div>
 
@@ -593,28 +641,28 @@ export default function App() {
             <div>
               <h4 className="text-[12px] font-bold uppercase tracking-[.16em] text-white">Company</h4>
               <ul className="mt-5 space-y-3 text-[14px] font-medium text-mute">
-                <li><a href="#" className="hover:text-gold-200 transition-colors duration-300">About</a></li>
-                <li><a href="#" className="hover:text-gold-200 transition-colors duration-300">Careers</a></li>
-                <li><a href="#" className="hover:text-gold-200 transition-colors duration-300">Blog</a></li>
-                <li><a href="#" className="hover:text-gold-200 transition-colors duration-300">Press kit</a></li>
+                <li><a href="/about.html" className="hover:text-gold-200 transition-colors duration-300">About</a></li>
+                <li><a href="/careers.html" className="hover:text-gold-200 transition-colors duration-300">Careers</a></li>
+                <li><a href="/blog.html" className="hover:text-gold-200 transition-colors duration-300">Blog</a></li>
+                <li><a href="/press.html" className="hover:text-gold-200 transition-colors duration-300">Press kit</a></li>
               </ul>
             </div>
             <div>
               <h4 className="text-[12px] font-bold uppercase tracking-[.16em] text-white">Resources</h4>
               <ul className="mt-5 space-y-3 text-[14px] font-medium text-mute">
-                <li><a href="#" className="hover:text-gold-200 transition-colors duration-300">Whitepaper</a></li>
-                <li><a href="#" className="hover:text-gold-200 transition-colors duration-300">Docs</a></li>
-                <li><a href="#" className="hover:text-gold-200 transition-colors duration-300">Token metrics</a></li>
-                <li><a href="#" className="hover:text-gold-200 transition-colors duration-300">Support</a></li>
+                <li><a href="/whitepaper.html" className="hover:text-gold-200 transition-colors duration-300">Whitepaper</a></li>
+                <li><a href="/docs.html" className="hover:text-gold-200 transition-colors duration-300">Docs</a></li>
+                <li><a href="/token-metrics.html" className="hover:text-gold-200 transition-colors duration-300">Token metrics</a></li>
+                <li><a href="/support.html" className="hover:text-gold-200 transition-colors duration-300">Support</a></li>
               </ul>
             </div>
             <div>
               <h4 className="text-[12px] font-bold uppercase tracking-[.16em] text-white">Legal</h4>
               <ul className="mt-5 space-y-3 text-[14px] font-medium text-mute">
-                <li><a href="#" className="hover:text-gold-200 transition-colors duration-300">Privacy</a></li>
-                <li><a href="#" className="hover:text-gold-200 transition-colors duration-300">Terms</a></li>
-                <li><a href="#" className="hover:text-gold-200 transition-colors duration-300">Cookies</a></li>
-                <li><a href="#" className="hover:text-gold-200 transition-colors duration-300">Disclosures</a></li>
+                <li><a href="/privacy.html" className="hover:text-gold-200 transition-colors duration-300">Privacy</a></li>
+                <li><a href="/terms.html" className="hover:text-gold-200 transition-colors duration-300">Terms</a></li>
+                <li><a href="/cookies.html" className="hover:text-gold-200 transition-colors duration-300">Cookies</a></li>
+                <li><a href="/disclosures.html" className="hover:text-gold-200 transition-colors duration-300">Disclosures</a></li>
               </ul>
             </div>
           </div>
@@ -654,6 +702,7 @@ export default function App() {
       <AuthModal
         open={authMode !== null}
         mode={authMode ?? "login"}
+        prefillEmail={email}
         onClose={() => setAuthMode(null)}
         onSwitch={(m) => setAuthMode(m)}
       />

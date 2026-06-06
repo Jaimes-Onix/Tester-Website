@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Support · Tester.io</title>
+  <meta name="description" content="Get help with Tester.io — answers to common questions and ways to reach our team." />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <meta name="theme-color" content="#000000" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/pages.css" />
+</head>
+<body>
+  <div class="grain"></div>
+  <header>
+    <nav>
+      <a class="brand" href="/" aria-label="Tester.io home"><img src="/tester-logo.png" alt="" />Tester<span class="gold">.io</span></a>
+      <div class="nav-right">
+        <a class="nav-link" href="/#features">Product</a>
+        <a class="nav-link" href="/docs.html">Docs</a>
+        <a class="nav-link" href="/whitepaper.html">Whitepaper</a>
+        <a class="nav-back" href="/">‹ Back to home</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="phead">
+      <div class="wrap">
+        <span class="eyebrow" data-rise>Support</span>
+        <h1 data-rise>How can we <em class="gold">help</em>?</h1>
+        <p class="lede" data-rise>Find quick answers below, or reach the team directly — we usually reply within a few hours.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <h2 data-rise>Ways to reach us</h2>
+        <div class="grid g3">
+          <div class="card" data-rise>
+            <span class="icon-tile"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m4 7 8 6 8-6" /></svg></span>
+            <h3>Email</h3>
+            <p><a class="gold" href="mailto:support@tester.io">support@tester.io</a> — for accounts, billing, and anything else.</p>
+          </div>
+          <div class="card" data-rise>
+            <span class="icon-tile"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg></span>
+            <h3>Community</h3>
+            <p>Join the conversation on <a class="gold" href="https://t.me/" target="_blank" rel="noopener">Telegram</a> and <a class="gold" href="https://discord.com/" target="_blank" rel="noopener">Discord</a>.</p>
+          </div>
+          <div class="card" data-rise>
+            <span class="icon-tile"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h10M7 12h6M3 5h18v12H7l-4 4z" /></svg></span>
+            <h3>Live chat</h3>
+            <p>Use the chat widget on the <a class="gold" href="/">home page</a> for instant guidance.</p>
+          </div>
+        </div>
+
+        <h2 data-rise>Frequently asked</h2>
+        <div data-rise>
+          <details><summary>How do I create an account?</summary><p>Click “Log in” on the home page, then “Create an account.” You'll need an email and a password — that's it to get started.</p></details>
+          <details><summary>Is Tester.io self-custody?</summary><p>Yes. Your keys and tokens stay yours; we provide the tools to trade and monitor without taking custody of your assets.</p></details>
+          <details><summary>How does the token sale work?</summary><p>Contributions are secured on-chain. See the <a class="gold" href="/token-metrics.html">token metrics</a> page for supply and distribution details.</p></details>
+          <details><summary>Where are the API docs?</summary><p>Everything for developers lives in the <a class="gold" href="/docs.html">docs</a> — authentication, market data, and orders.</p></details>
+          <details><summary>How do I reset my password?</summary><p>On the login screen, choose “Forgot password?” and follow the email instructions. Still stuck? Email <a class="gold" href="mailto:support@tester.io">support@tester.io</a>.</p></details>
+        </div>
+
+        <div class="cta" data-rise>
+          <h2>Still need help?</h2>
+          <p class="muted">Send us a message and we'll get back to you fast.</p>
+          <div class="btn-row" style="justify-content:center">
+            <a class="btn btn-gold" href="/#contact">Contact us</a>
+            <a class="btn btn-ghost" href="/docs.html">Browse the docs</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap foot">
+      <span>© <span id="yr">2026</span> Tester.io · The future of leverage.</span>
+      <div class="foot-links">
+        <a href="/about.html">About</a><a href="/whitepaper.html">Whitepaper</a><a href="/support.html">Support</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/">Home ↗</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const h=document.querySelector('header');
+    addEventListener('scroll',()=>h.classList.toggle('scrolled',scrollY>10),{passive:true});
+    const io=new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.1});
+    document.querySelectorAll('[data-rise]').forEach((el,i)=>{el.style.transitionDelay=((i%6)*0.05)+'s';io.observe(el)});
+    const y=document.getElementById('yr');if(y)y.textContent=new Date().getFullYear();
+  </script>
+</body>
+</html>

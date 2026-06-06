@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Careers · Tester.io</title>
+  <meta name="description" content="Help build the future of leverage. Open roles across engineering, design, and operations at Tester.io." />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <meta name="theme-color" content="#000000" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/pages.css" />
+</head>
+<body>
+  <div class="grain"></div>
+  <header>
+    <nav>
+      <a class="brand" href="/" aria-label="Tester.io home"><img src="/tester-logo.png" alt="" />Tester<span class="gold">.io</span></a>
+      <div class="nav-right">
+        <a class="nav-link" href="/#features">Product</a>
+        <a class="nav-link" href="/docs.html">Docs</a>
+        <a class="nav-link" href="/support.html">Support</a>
+        <a class="nav-back" href="/">‹ Back to home</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="phead">
+      <div class="wrap">
+        <span class="eyebrow" data-rise>Careers</span>
+        <h1 data-rise>Come build <em class="gold">with us</em>.</h1>
+        <p class="lede" data-rise>We're a small, senior team shipping fast across web, infrastructure, and on-chain systems. If you want ownership, real users, and hard problems, you'll feel at home here.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <h2 data-rise>Why Tester.io</h2>
+        <div class="grid g3">
+          <div class="card" data-rise><h3>Real ownership</h3><p>Small team, big surface area. You'll own features end-to-end, from spec to ship.</p></div>
+          <div class="card" data-rise><h3>Remote-first</h3><p>Work from anywhere. We optimize for written clarity and async over meetings.</p></div>
+          <div class="card" data-rise><h3>Token upside</h3><p>Competitive comp plus a meaningful TST allocation — you win as we grow.</p></div>
+        </div>
+
+        <h2 data-rise>Open roles</h2>
+        <div data-rise>
+          <div class="row"><div><div style="font-weight:700">Senior Frontend Engineer</div><div class="r-meta">Engineering · Remote · Full-time</div></div><span class="r-tag">Apply →</span></div>
+          <div class="row"><div><div style="font-weight:700">Smart Contract Engineer</div><div class="r-meta">Protocol · Remote · Full-time</div></div><span class="r-tag">Apply →</span></div>
+          <div class="row"><div><div style="font-weight:700">Product Designer</div><div class="r-meta">Design · Remote · Full-time</div></div><span class="r-tag">Apply →</span></div>
+          <div class="row"><div><div style="font-weight:700">Developer Relations</div><div class="r-meta">Community · Remote · Full-time</div></div><span class="r-tag">Apply →</span></div>
+          <div class="row"><div><div style="font-weight:700">Support Specialist</div><div class="r-meta">Operations · Remote · Full-time</div></div><span class="r-tag">Apply →</span></div>
+        </div>
+
+        <div class="cta" data-rise>
+          <h2>Don't see your role?</h2>
+          <p class="muted">We're always glad to meet exceptional people. Tell us how you'd make Tester.io better.</p>
+          <div class="btn-row" style="justify-content:center">
+            <a class="btn btn-gold" href="mailto:careers@tester.io">Email careers@tester.io</a>
+            <a class="btn btn-ghost" href="/about.html">About the team</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap foot">
+      <span>© <span id="yr">2026</span> Tester.io · The future of leverage.</span>
+      <div class="foot-links">
+        <a href="/about.html">About</a><a href="/whitepaper.html">Whitepaper</a><a href="/support.html">Support</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/">Home ↗</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const h=document.querySelector('header');
+    addEventListener('scroll',()=>h.classList.toggle('scrolled',scrollY>10),{passive:true});
+    const io=new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.1});
+    document.querySelectorAll('[data-rise]').forEach((el,i)=>{el.style.transitionDelay=((i%6)*0.05)+'s';io.observe(el)});
+    const y=document.getElementById('yr');if(y)y.textContent=new Date().getFullYear();
+  </script>
+</body>
+</html>

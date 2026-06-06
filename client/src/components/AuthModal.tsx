@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Modal, { ModalLogo, CloseButton } from "./Modal";
 
 type Mode = "login" | "signup";
@@ -28,16 +28,24 @@ const SOCIALS = [
 export default function AuthModal({
   open,
   mode,
+  prefillEmail = "",
   onClose,
   onSwitch,
 }: {
   open: boolean;
   mode: Mode;
+  prefillEmail?: string;
   onClose: () => void;
   onSwitch: (m: Mode) => void;
 }) {
   const [showPw, setShowPw] = useState(false);
+  const [email, setEmail] = useState(prefillEmail);
   const isSignup = mode === "signup";
+
+  /** Carry the email typed in the hero form into the modal each time it opens. */
+  useEffect(() => {
+    if (open) setEmail(prefillEmail);
+  }, [open, prefillEmail]);
 
   return (
     <Modal open={open} onClose={onClose} panelClass="max-w-[920px] overflow-hidden" label="Account">
@@ -119,7 +127,7 @@ export default function AuthModal({
 
             <label className="field">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8A8A8F" strokeWidth="1.6" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m4 7 8 6 8-6" /></svg>
-              <input type="email" placeholder="Email" autoComplete="email" aria-label="Email" required />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" autoComplete="email" aria-label="Email" required />
             </label>
 
             <label className="field">
@@ -138,7 +146,7 @@ export default function AuthModal({
               <label className="flex items-start gap-2.5 pt-1 cursor-pointer select-none">
                 <input type="checkbox" className="ck mt-0.5" required />
                 <span className="text-[12.5px] leading-[1.5] text-mute">
-                  I agree to the <a href="#" className="text-gold-200 hover:text-gold-100 underline underline-offset-2">Terms &amp; Conditions</a> and <a href="#" className="text-gold-200 hover:text-gold-100 underline underline-offset-2">Privacy Policy</a>.
+                  I agree to the <a href="/terms.html" target="_blank" rel="noopener noreferrer" className="text-gold-200 hover:text-gold-100 underline underline-offset-2">Terms &amp; Conditions</a> and <a href="/privacy.html" target="_blank" rel="noopener noreferrer" className="text-gold-200 hover:text-gold-100 underline underline-offset-2">Privacy Policy</a>.
                 </span>
               </label>
             ) : (
@@ -147,7 +155,7 @@ export default function AuthModal({
                   <input type="checkbox" className="ck" />
                   <span className="text-[12.5px] text-mute">Remember me</span>
                 </label>
-                <a href="#" className="text-[12.5px] font-semibold text-gold-200 hover:text-gold-100 transition-colors duration-300">Forgot password?</a>
+                <button type="button" className="text-[12.5px] font-semibold text-gold-200 hover:text-gold-100 transition-colors duration-300">Forgot password?</button>
               </div>
             )}
 
