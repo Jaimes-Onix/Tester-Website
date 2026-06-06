@@ -7,6 +7,7 @@
  * Nothing here sends email or starts a server — it just produces data + HTML.
  */
 import Groq from "groq-sdk";
+import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
 import fs from "node:fs";
 import path from "node:path";
@@ -68,17 +69,18 @@ export async function getLeads(mode = "demo", hours = 24) {
   return SAMPLE_LEADS;
 }
 
-/* ── Groq ────────────────────────────────────────────────────────────────── */
-export async function generateBriefing(leads) {
-  // No leads → don't spend Groq tokens; return a clean "nothing today" note.
-  if (!leads || leads.length === 0) {
-    return "No new leads in the last 24 hours.\nFocus today: re-engage an existing subscriber or revisit yesterday's pipeline.";
-  }
+/* ── AI summary (Claude primary, Groq fallback) ──────────────────────────── *
+ * Tracks which engine actually produced the briefing so the email footer can
+ * say so. Updated by generateBriefing() before renderBriefingEmail() runs.    */
+export let briefingProvider = "AI";
 
+const SYSTEM = "You write crisp, useful sales briefings. No fluff.";
+
+// The one prompt both engines share, so Claude and Groq produce the same shape.
+function buildPrompt(leads) {
   const N = leads.length;
   const top = Math.min(N, 8); // list at most 8 ranked leads to keep it skimmable
-  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-  const prompt = `You are a sales operations assistant. Below are ${N} new leads
+  return `You are a sales operations assistant. Below are ${N} new leads
 that signed up recently, as JSON. Write a concise MORNING BRIEFING for the founder.
 
 Each lead has a name and email. A lead may ALSO have a "company" (infer
@@ -86,7 +88,14 @@ industry/size from it + the email domain) and/or a "message" they wrote (use it
 to judge their intent and how warm they are).
 
 Output EXACTLY this plain-text structure, nothing before or after:
-Line 1: the headline, exactly "${N} new lead${N === 1 ? "" : "s"} yesterday."
+Line 1: a single conversational headline in this style:
+"You got ${N} new lead${N === 1 ? "" : "s"} yesterday" + ONE short, TRUE insight
+about the mix, then end with "here's the prioritized list:".
+  - The insight should count a real segment you can support from the data — e.g.
+    "2 are from SaaS companies", "3 wrote detailed messages", "1 looks like a test".
+  - Example shape: "You got 6 new leads yesterday, 2 are from SaaS companies — here's the prioritized list:"
+  - If you genuinely can't infer any segment, just write:
+    "You got ${N} new lead${N === 1 ? "" : "s"} yesterday — here's the prioritized list:"
 Then the ${top} most promising leads, each on ITS OWN line, numbered, formatted:
 "1. Full Name, one-sentence reason + suggested next action."
 "2. Full Name, ..."
@@ -94,22 +103,69 @@ Then the ${top} most promising leads, each on ITS OWN line, numbered, formatted:
 Final line: "Focus today: <single best lead's name>"
 
 Rules:
+- Line 1 must be ONE line only (no line breaks inside the headline).
 - Start each ranked line with "N. " and the person's name, then a comma.
 - No preamble like "Prioritized leads:". No markdown, no bullets, no tables.
 - Rank by how warm/promising each lead is; ignore obvious test/spam entries.
 
 Leads JSON:
 ${JSON.stringify(leads, null, 2)}`;
+}
 
+// Claude (Anthropic). Kept deliberately plain — no temperature / budget_tokens /
+// effort, which would 400 on the wrong model tier. Model is overridable.
+async function generateWithClaude(prompt) {
+  const model = process.env.ANTHROPIC_MODEL || "claude-haiku-4-5";
+  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const res = await anthropic.messages.create({
+    model,
+    max_tokens: 1024,
+    system: SYSTEM,
+    messages: [{ role: "user", content: prompt }],
+  });
+  const text = res.content.find((b) => b.type === "text")?.text?.trim();
+  if (!text) throw new Error("Claude returned no text content.");
+  briefingProvider = `Claude · ${model.replace(/^claude-/, "")}`;
+  return text;
+}
+
+// Groq (Llama) — the fallback, also the default when no ANTHROPIC_API_KEY is set.
+async function generateWithGroq(prompt) {
+  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
   const res = await groq.chat.completions.create({
     model: "llama-3.3-70b-versatile",
     temperature: 0.4,
     messages: [
-      { role: "system", content: "You write crisp, useful sales briefings. No fluff." },
+      { role: "system", content: SYSTEM },
       { role: "user", content: prompt },
     ],
   });
-  return res.choices[0]?.message?.content?.trim() || "(no content returned)";
+  const text = res.choices[0]?.message?.content?.trim();
+  if (!text) throw new Error("Groq returned no content.");
+  briefingProvider = "Groq · Llama 3.3";
+  return text;
+}
+
+// Orchestrator: prefer Claude (matches the objective's "AI (Claude)"), but fall
+// back to Groq if Claude isn't configured or the call fails — so the daily
+// briefing never silently breaks just because of one provider.
+export async function generateBriefing(leads) {
+  // No leads → don't spend any AI tokens; return a clean "nothing today" note.
+  if (!leads || leads.length === 0) {
+    briefingProvider = "AI";
+    return "No new leads in the last 24 hours.\nFocus today: re-engage an existing subscriber or revisit yesterday's pipeline.";
+  }
+
+  const prompt = buildPrompt(leads);
+
+  if (process.env.ANTHROPIC_API_KEY) {
+    try {
+      return await generateWithClaude(prompt);
+    } catch (err) {
+      console.warn(`⚠ Claude failed (${err?.message || err}); falling back to Groq.`);
+    }
+  }
+  return await generateWithGroq(prompt);
 }
 
 /* ── render: plain-text briefing → email-safe HTML ───────────────────────── */
@@ -205,7 +261,7 @@ export function renderBriefingEmail({ briefing, count, dateLabel }) {
               <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:${C.gold};">Focus today</div>
               <div style="font-family:${C.serif};margin-top:6px;font-size:16px;line-height:1.45;color:${C.ink};">${esc(focus)}</div>
             </div>` : ""}
-            <p style="margin:22px 0 0;font-size:11px;line-height:1.6;color:${C.muted};">Generated by Groq · Llama 3.3<br/>Tester.io ops desk</p>
+            <p style="margin:22px 0 0;font-size:11px;line-height:1.6;color:${C.muted};">Generated by ${esc(briefingProvider)}<br/>Tester.io ops desk</p>
           </td>
           <td class="gridcol" style="vertical-align:top;padding-left:34px;">
             <table role="presentation" cellpadding="0" cellspacing="0" width="100%">${grid}</table>
